@@ -138,10 +138,7 @@ const App: React.FC = () => {
                     {/* Header */}
                     <header className="flex justify-between items-start">
                         <div className="flex flex-col">
-                            <h1 className="text-4xl md:text-5xl font-bold text-[#fde08d] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" style={{ fontFamily: 'Cinzel, serif' }}>
-                                AL <br/>
-                                <span className="text-2xl md:text-3xl font-normal tracking-wider">Studio</span>
-                            </h1>
+                           {/* Logo removed */}
                         </div>
                         <motion.button 
                             whileHover={{ scale: 1.1, rotate: 180 }}
