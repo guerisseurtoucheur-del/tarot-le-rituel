@@ -3,13 +3,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 const SpeakerOnIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
     </svg>
 );
 
 const SpeakerOffIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l-4-4m0 4l4-4" />
     </svg>
@@ -41,17 +41,18 @@ const AudioControl: React.FC = () => {
   };
 
   return (
-    <>
+    <div className='flex items-center gap-2'>
       <audio ref={audioRef} src={musicUrl} preload="auto"></audio>
       <motion.button
         onClick={togglePlay}
-        className="p-2 rounded-full bg-red-900/50 text-amber-300 border border-amber-400"
-        whileHover={{ scale: 1.1, boxShadow: '0 0 10px rgba(252, 211, 77, 0.5)' }}
+        className="p-2 rounded-full"
+        whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
       >
         {isPlaying ? <SpeakerOnIcon /> : <SpeakerOffIcon />}
       </motion.button>
-    </>
+      <span className='text-xs tracking-widest'>MUSIQUE : MÉLODIE TZIGANE ANCESTRALE</span>
+    </div>
   );
 };
 

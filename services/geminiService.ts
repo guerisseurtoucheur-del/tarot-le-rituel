@@ -10,7 +10,7 @@ if (!API_KEY) {
 
 const ai = new GoogleGenAI({ apiKey: API_KEY });
 
-export const getReading = async (cards: TarotCardType[], previousReading?: string): Promise<string> => {
+export const getReading = async (cards: TarotCardType[], question: string, previousReading?: string): Promise<string> => {
   const cardNames = cards.map(c => c.name).join(', ');
   
   let prompt: string;
@@ -18,9 +18,9 @@ export const getReading = async (cards: TarotCardType[], previousReading?: strin
   if (previousReading) {
       const previousCardNames = cards.slice(0, 4).map(c => c.name).join(', ');
       const newCardNames = cards.slice(4).map(c => c.name).join(', ');
-      prompt = `Tu es une cartomancienne mystique et sage. Tu t'adresses à un consultant en quête de réponses. La lecture précédente basée sur les cartes ${previousCardNames} était : "${previousReading}". Le consultant a souhaité approfondir son destin et tu as tiré deux arcanes supplémentaires : ${newCardNames}. Poursuis ta lecture en intégrant ces nouvelles cartes au récit. Révèle comment elles éclairent ou modifient la voie qui a été tracée. Ton ton reste mystérieux et inspirant. Ne répète pas la lecture précédente, mais continue l'histoire.`;
+      prompt = `Tu es une cartomancienne mystique et sage. Tu t'adresses à un consultant qui a posé la question : "${question}". La lecture précédente basée sur les cartes ${previousCardNames} était : "${previousReading}". Pour approfondir, tu as tiré deux arcanes supplémentaires : ${newCardNames}. Poursuis ta lecture en intégrant ces nouvelles cartes au récit. Révèle comment elles éclairent ou modifient la voie tracée par la question initiale. Ton ton reste mystérieux et inspirant. Ne répète pas la lecture précédente, mais continue l'histoire.`;
   } else {
-      prompt = `Tu es une cartomancienne mystique et sage. Tu t'adresses à un consultant en quête de réponses. Tu viens de tirer les quatre arcanes suivants du Tarot de Grimaud : ${cardNames}. Rédige une interprétation poétique et narrative qui lie ces quatre cartes ensemble en un seul récit cohérent. Ne décris pas les cartes individuellement, mais tisse une histoire globale sur le destin du consultant en environ 100 mots.`;
+      prompt = `Tu es une cartomancienne mystique et sage. Tu t'adresses à un consultant qui a posé la question suivante : "${question}". Tu viens de tirer les quatre arcanes du Tarot de Grimaud : ${cardNames}. Rédige une interprétation poétique et narrative qui lie ces quatre cartes pour répondre à sa question. Tisse une histoire globale et cohérente sur son destin en environ 100 mots. Ne décris pas les cartes individuellement.`;
   }
 
   try {
