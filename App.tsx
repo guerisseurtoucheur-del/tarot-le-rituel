@@ -12,40 +12,39 @@ const shuffleDeck = (deck: TarotCardType[]): TarotCardType[] => {
   return [...deck].sort(() => Math.random() - 0.5);
 };
 
-// Bouton principal style "Plaque" (Bois et Or)
+// Bouton principal style "Plaque" (Bois sombre et Or brossé)
 const MainPlaqueButton: React.FC<{onClick: () => void; children: React.ReactNode; disabled?: boolean}> = ({onClick, children, disabled}) => (
   <motion.button
     onClick={onClick}
     disabled={disabled}
     whileHover={disabled ? {} : { scale: 1.02, filter: 'brightness(1.1)' }}
     whileTap={disabled ? {} : { scale: 0.98 }}
-    className={`relative px-10 py-4 flex items-center justify-center min-w-[280px] ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+    className={`relative px-12 py-5 flex items-center justify-center min-w-[300px] ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
   >
-    {/* Frame Dorée */}
-    <div className="absolute inset-0 border-[3px] border-[#c5a059] rounded-sm shadow-[0_0_15px_rgba(0,0,0,0.8)]"
+    {/* Fond Plaque Bois */}
+    <div className="absolute inset-0 border-[3px] border-[#c5a059] rounded-sm shadow-[0_10px_30px_rgba(0,0,0,0.8)]"
          style={{
-           background: 'linear-gradient(180deg, #4a3419 0%, #2a1b0c 100%)',
-           boxShadow: 'inset 0 0 10px rgba(0,0,0,0.8), 0 5px 15px rgba(0,0,0,0.6)'
+           background: 'linear-gradient(180deg, #3d2b14 0%, #1a1108 100%)',
+           boxShadow: 'inset 0 0 15px rgba(0,0,0,0.9), 0 5px 20px rgba(0,0,0,0.7)'
          }}>
-      {/* Ornements coins */}
-      <div className="absolute -top-1 -left-1 w-4 h-4 border-t-4 border-l-4 border-[#fde08d]"></div>
-      <div className="absolute -top-1 -right-1 w-4 h-4 border-t-4 border-r-4 border-[#fde08d]"></div>
-      <div className="absolute -bottom-1 -left-1 w-4 h-4 border-b-4 border-l-4 border-[#fde08d]"></div>
-      <div className="absolute -bottom-1 -right-1 w-4 h-4 border-b-4 border-r-4 border-[#fde08d]"></div>
+      {/* Ornements dorés aux coins */}
+      <div className="absolute -top-1 -left-1 w-5 h-5 border-t-[4px] border-l-[4px] border-[#fde08d] shadow-[0_0_5px_#fde08d]"></div>
+      <div className="absolute -top-1 -right-1 w-5 h-5 border-t-[4px] border-r-[4px] border-[#fde08d] shadow-[0_0_5px_#fde08d]"></div>
+      <div className="absolute -bottom-1 -left-1 w-5 h-5 border-b-[4px] border-l-[4px] border-[#fde08d] shadow-[0_0_5px_#fde08d]"></div>
+      <div className="absolute -bottom-1 -right-1 w-5 h-5 border-b-[4px] border-r-[4px] border-[#fde08d] shadow-[0_0_5px_#fde08d]"></div>
     </div>
-    <span className="relative z-10 font-cinzel font-bold text-[#fde08d] text-lg tracking-[0.2em] uppercase drop-shadow-[0_2px_2px_rgba(0,0,0,1)]">
+    <span className="relative z-10 font-cinzel font-bold text-[#fde08d] text-lg md:text-xl tracking-[0.25em] uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,1)]">
       {children}
     </span>
   </motion.button>
 );
 
-// Bouton secondaire style "Approfondir"
 const SecondaryButton: React.FC<{onClick: () => void; children: React.ReactNode; disabled?: boolean}> = ({onClick, children, disabled}) => (
   <motion.button
     onClick={onClick}
     disabled={disabled}
     whileHover={disabled ? {} : { scale: 1.05, color: '#fde08d' }}
-    className={`px-6 py-2 border border-[#c5a059]/40 rounded-full text-[#c5a059] font-cinzel text-xs tracking-widest uppercase transition-all ${disabled ? 'opacity-30' : 'hover:border-[#fde08d]'}`}
+    className={`px-8 py-3 border border-[#c5a059]/40 rounded-full text-[#c5a059] font-cinzel text-[10px] md:text-xs tracking-[0.2em] uppercase transition-all bg-black/20 backdrop-blur-sm ${disabled ? 'opacity-30' : 'hover:border-[#fde08d] shadow-lg'}`}
   >
     {children}
   </motion.button>
@@ -62,7 +61,6 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentDate(new Date()), 1000);
-    // Initial deal
     handleStartRitual();
     return () => clearInterval(timer);
   }, []);
@@ -78,13 +76,14 @@ const App: React.FC = () => {
   };
 
   const fetchReading = useCallback(async (currentCards: TarotCardType[], isDeepening = false) => {
+    if (!userQuestion.trim() && !isDeepening) return;
     setIsLoading(true);
     try {
       const res = await getReading(currentCards, userQuestion || "Quel est mon destin ?", isDeepening ? reading : undefined);
       setReading(res);
       setGameState(isDeepening ? GameState.FINAL_READING : GameState.READING);
     } catch (e) {
-      setReading("Les cieux sont voilés. Réessayez plus tard.");
+      setReading("Les cieux sont voilés. L'astral ne répond pas.");
     } finally {
       setIsLoading(false);
     }
@@ -98,57 +97,55 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#0a0a0a] flex items-center justify-center p-4 overflow-hidden">
+    <div className="min-h-screen w-full bg-[#050505] flex items-center justify-center p-4 md:p-10 overflow-hidden font-cinzel">
       {/* Laptop Frame */}
-      <div className="relative w-full max-w-[1280px] aspect-[16/10] bg-[#1a1a1a] rounded-t-3xl border-x-[12px] border-t-[12px] border-[#222] shadow-2xl overflow-hidden flex flex-col">
+      <div className="relative w-full max-w-[1400px] aspect-[16/10] bg-[#1a1a1a] rounded-t-3xl border-x-[14px] border-t-[14px] border-[#252525] shadow-[0_0_100px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col">
         
-        {/* Screen Background - Fortune Teller Image */}
+        {/* Screen Content */}
         <div className="relative flex-grow bg-cover bg-center" 
              style={{ backgroundImage: "url('https://i.imgur.com/3sPjB0p.jpeg')" }}>
           
-          {/* Overlay gradient for readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40"></div>
+          {/* Overlays */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-black/50"></div>
+          <div className="absolute inset-0 bg-black/20 backdrop-brightness-75"></div>
 
           {/* HUD Content */}
-          <div className="absolute inset-0 p-8 flex flex-col justify-between z-10">
+          <div className="absolute inset-0 p-10 flex flex-col justify-between z-10">
             
-            {/* Top Bar */}
-            <header className="flex justify-between items-start">
-              <div className="flex flex-col">
-                {/* Logo retiré selon instruction */}
-              </div>
+            {/* Top Bar - Clean */}
+            <header className="flex justify-end items-start">
               <motion.button 
-                whileHover={{ scale: 1.1 }}
-                className="w-10 h-10 rounded-full border border-[#fde08d]/40 flex items-center justify-center text-[#fde08d] bg-black/20 backdrop-blur-sm"
+                whileHover={{ scale: 1.1, rotate: 15 }}
+                className="w-12 h-12 rounded-full border-2 border-[#fde08d]/50 flex items-center justify-center text-[#fde08d] bg-black/40 backdrop-blur-md shadow-lg"
               >
-                <span className="text-xl font-serif">?</span>
+                <span className="text-2xl font-serif font-bold">?</span>
               </motion.button>
             </header>
 
             {/* Middle Content */}
-            <main className="flex-grow flex flex-col items-center justify-center text-center -mt-10">
-              <motion.h1 
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-4xl md:text-6xl font-bold text-[#fde08d] mb-2 tracking-widest drop-shadow-[0_4px_6px_rgba(0,0,0,0.9)]"
-                style={{ fontStyle: 'italic' }}
+            <main className="flex-grow flex flex-col items-center justify-center text-center">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="mb-4"
               >
-                TIRAGE INITIAL DE {drawnCards.length} CARTES
-              </motion.h1>
-              
-              <p className="text-[#e0c097] italic text-lg md:text-xl mb-10 drop-shadow-md">
-                Posez votre question... et révele voutr chemin..
-              </p>
+                <h1 className="text-4xl md:text-6xl font-bold text-[#fde08d] tracking-[0.1em] uppercase drop-shadow-[0_5px_15px_rgba(0,0,0,1)]">
+                  TIRAGE INITIAL DE {drawnCards.length} CARTES
+                </h1>
+                <p className="text-[#e0c097] italic text-xl md:text-2xl mt-4 drop-shadow-lg opacity-90">
+                  Posez votre question... et révèle voutr chemin..
+                </p>
+              </motion.div>
 
-              {/* Cards Row */}
-              <div className="flex gap-4 md:gap-6 mb-12">
+              {/* Cards Deck */}
+              <div className="flex gap-4 md:gap-8 my-10 perspective-1000">
                 <AnimatePresence>
                   {drawnCards.map((card, i) => (
                     <motion.div
                       key={card.name + i}
-                      initial={{ opacity: 0, y: 30, scale: 0.8 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      transition={{ delay: i * 0.1 }}
+                      initial={{ opacity: 0, y: 50, rotateX: 20 }}
+                      animate={{ opacity: 1, y: 0, rotateX: 0 }}
+                      transition={{ delay: i * 0.12, type: 'spring', damping: 15 }}
                     >
                       <TarotCard card={card} isRevealed={true} />
                     </motion.div>
@@ -156,31 +153,43 @@ const App: React.FC = () => {
                 </AnimatePresence>
               </div>
 
-              {/* Question Input and Buttons */}
-              <div className="w-full max-w-2xl flex flex-col items-center gap-8">
+              {/* Action Area */}
+              <div className="w-full max-w-3xl flex flex-col items-center gap-10">
                 {gameState === GameState.DEALT && (
-                  <input 
-                    type="text"
-                    placeholder="Tapez votre question ici..."
-                    className="w-full bg-transparent border-b border-[#c5a059]/30 text-[#fde08d] text-center text-xl md:text-2xl p-2 focus:outline-none focus:border-[#fde08d] placeholder-[#c5a059]/40 italic font-serif transition-all"
-                    value={userQuestion}
-                    onChange={(e) => setUserQuestion(e.target.value)}
-                  />
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full">
+                    <input 
+                      type="text"
+                      placeholder="Quelle vérité cherchez-vous ?"
+                      className="w-full bg-transparent border-b-2 border-[#c5a059]/40 text-[#fde08d] text-center text-2xl md:text-3xl p-4 focus:outline-none focus:border-[#fde08d] placeholder-[#c5a059]/30 italic transition-all drop-shadow-md"
+                      value={userQuestion}
+                      onChange={(e) => setUserQuestion(e.target.value)}
+                    />
+                  </motion.div>
                 )}
 
-                {reading && !isLoading && (
-                  <div className="bg-black/60 backdrop-blur-md p-6 rounded-lg border border-[#c5a059]/20 max-h-[150px] overflow-y-auto w-full text-[#fde08d] text-lg italic">
-                    <Typewriter text={reading} speed={0.03} />
-                  </div>
+                {(reading || isLoading) && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }} 
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-black/70 backdrop-blur-xl p-8 rounded-xl border border-[#c5a059]/30 w-full shadow-2xl overflow-hidden"
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center justify-center gap-3 text-[#fde08d] italic text-xl animate-pulse">
+                        <span className="w-2 h-2 bg-[#fde08d] rounded-full"></span>
+                        La cartomancienne déchiffre les fils du destin...
+                        <span className="w-2 h-2 bg-[#fde08d] rounded-full"></span>
+                      </div>
+                    ) : (
+                      <div className="text-[#fde08d] text-xl leading-relaxed italic drop-shadow-lg">
+                        <Typewriter text={reading} speed={0.02} />
+                      </div>
+                    )}
+                  </motion.div>
                 )}
 
-                {isLoading && (
-                  <div className="text-[#fde08d] animate-pulse italic text-lg">La cartomancienne déchiffre les fils du destin...</div>
-                )}
-
-                <div className="flex flex-wrap justify-center items-center gap-8">
+                <div className="flex flex-col md:flex-row items-center gap-10">
                   {gameState === GameState.DEALT && (
-                    <MainPlaqueButton onClick={() => fetchReading(drawnCards)}>
+                    <MainPlaqueButton onClick={() => fetchReading(drawnCards)} disabled={!userQuestion.trim()}>
                       RÉVÉLER MON DESTIN
                     </MainPlaqueButton>
                   )}
@@ -190,28 +199,38 @@ const App: React.FC = () => {
                     </SecondaryButton>
                   )}
                   {(gameState === GameState.FINAL_READING || (gameState === GameState.READING && drawnCards.length === 4)) && (
-                     <button onClick={handleStartRitual} className="text-[#c5a059] border-b border-[#c5a059]/40 text-xs tracking-[0.3em] uppercase hover:text-[#fde08d] transition-colors">
+                     <motion.button 
+                        whileHover={{ letterSpacing: '0.4em', color: '#fde08d' }}
+                        onClick={handleStartRitual} 
+                        className="text-[#c5a059] border-b border-[#c5a059]/30 text-xs tracking-[0.3em] uppercase transition-all py-1"
+                     >
                         Nouveau Rituel
-                     </button>
+                     </motion.button>
                   )}
                 </div>
               </div>
             </main>
 
             {/* Footer HUD */}
-            <footer className="flex justify-between items-end text-[#c5a059] font-bold text-xs tracking-widest uppercase">
+            <footer className="flex justify-between items-end text-[#c5a059] font-bold text-sm tracking-widest uppercase mt-4">
               <AudioControl />
-              <div className="flex items-center gap-4">
-                <span>{currentDate.toLocaleString('en-US', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }).replace(',', '')} PM CET</span>
-                <div className="w-6 h-6 bg-[#fde08d] clip-star shadow-[0_0_10px_#fde08d]" style={{ clipPath: 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)' }}></div>
+              <div className="flex items-center gap-6 bg-black/30 px-6 py-2 rounded-full backdrop-blur-sm border border-white/5">
+                <span className="opacity-80">
+                  {currentDate.toLocaleString('en-US', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }).replace(',', '')} PM CET
+                </span>
+                <motion.div 
+                  animate={{ scale: [1, 1.2, 1], opacity: [0.7, 1, 0.7] }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                  className="w-6 h-6 bg-[#fde08d] clip-star shadow-[0_0_20px_#fde08d]"
+                ></motion.div>
               </div>
             </footer>
           </div>
         </div>
 
-        {/* Laptop Lower Bezel */}
-        <div className="h-4 bg-[#111] w-full border-t border-black flex justify-center items-center">
-            <div className="w-20 h-1 bg-[#333] rounded-full"></div>
+        {/* Laptop Bottom Lip */}
+        <div className="h-6 bg-[#151515] w-full border-t border-black/40 flex justify-center items-center">
+            <div className="w-24 h-1.5 bg-[#333] rounded-full shadow-inner"></div>
         </div>
       </div>
     </div>
