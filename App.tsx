@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-// Images stables
 const ARCANES_MAJEURS = [
   { id: 0, name: "Le Mat", img: "https://www.sacred-texts.com/tarot/pkt/img/ar00.jpg" },
   { id: 1, name: "Le Bateleur", img: "https://www.sacred-texts.com/tarot/pkt/img/ar01.jpg" },
@@ -27,8 +26,14 @@ const ARCANES_MAJEURS = [
 ];
 
 export default function App() {
+  const [isClient, setIsClient] = useState(false);
   const [selectedCards, setSelectedCards] = useState<any[]>([]);
   const [flipped, setFlipped] = useState<Record<number, boolean>>({});
+
+  // Sécurité pour Vercel (évite les erreurs d'hydratation)
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const selectCard = (card: any) => {
     if (selectedCards.length < 4 && !selectedCards.find(c => c.id === card.id)) {
@@ -36,84 +41,51 @@ export default function App() {
     }
   };
 
-  const resetTirage = () => {
-    setSelectedCards([]);
-    setFlipped({});
-  };
-
-  const positions = [
-    { label: "Le Présent", class: "col-start-1 row-start-2" },
-    { label: "L'Obstacle", class: "col-start-3 row-start-2" },
-    { label: "Le Conseil", class: "col-start-2 row-start-1" },
-    { label: "L'Issue", class: "col-start-2 row-start-3" },
-  ];
+  if (!isClient) return null;
 
   return (
-    <div className="min-h-screen bg-[#050505] text-[#d4af37] p-4 md:p-8 font-serif">
-      <header className="text-center mb-8">
-        <h1 className="text-3xl md:text-5xl font-bold tracking-widest uppercase mb-2">Le Grand Tirage en Croix</h1>
-        <p className="text-[#d4af37]/60 italic">
-          {selectedCards.length < 4 
-            ? `Choisissez ${4 - selectedCards.length} cartes de votre main` 
-            : "Révélez votre destin..."}
-        </p>
-      </header>
+    <div className="min-h-screen bg-black text-[#d4af37] p-4 md:p-10">
+      <h1 className="text-center text-3xl font-bold uppercase tracking-widest mb-10">
+        Salon de Cartomancie
+      </h1>
 
       {selectedCards.length < 4 ? (
-        <div className="flex flex-wrap justify-center gap-3 max-w-5xl mx-auto">
-          {ARCANES_MAJEURS.map((card) => {
-            const isSelected = selectedCards.find(c => c.id === card.id);
-            return (
-              <div 
-                key={card.id}
-                onClick={() => selectCard(card)}
-                className={`w-20 h-32 cursor-pointer transition-all border rounded-lg flex items-center justify-center bg-[#0a0c10]
-                  ${isSelected ? 'opacity-20 scale-90' : 'border-[#d4af37]/40 hover:border-[#d4af37] hover:-translate-y-1'}`}
-              >
-                <span className="text-[10px] opacity-40 uppercase">Arcane</span>
-              </div>
-            );
-          })}
+        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3 max-w-4xl mx-auto">
+          {ARCANES_MAJEURS.map((card) => (
+            <div 
+              key={card.id}
+              onClick={() => selectCard(card)}
+              className={`aspect-[2/3] border rounded cursor-pointer transition-all flex items-center justify-center
+                ${selectedCards.find(c => c.id === card.id) ? 'opacity-10 border-gray-600' : 'border-[#d4af37]/50 hover:border-[#d4af37]'}`}
+            >
+              <div className="text-[8px]">ARCANUM</div>
+            </div>
+          ))}
         </div>
       ) : (
-        <div className="max-w-4xl mx-auto mt-10">
-          <div className="grid grid-cols-3 grid-rows-3 gap-4 md:gap-8 items-center justify-items-center h-[600px]">
-            {selectedCards.map((card, index) => (
-              <div key={index} className={`w-full max-w-[160px] md:max-w-[200px] h-[260px] md:h-[320px] ${positions[index].class}`}>
-                <div className="text-center mb-2 text-[10px] tracking-widest uppercase opacity-40">{positions[index].label}</div>
-                <div 
-                  onClick={() => setFlipped(prev => ({...prev, [index]: !prev[index]}))}
-                  className="relative w-full h-full cursor-pointer perspective-1000"
-                >
-                  <div className={`relative w-full h-full transition-transform duration-700 preserve-3d ${flipped[index] ? 'rotate-y-180' : ''}`}>
-                    <div className="absolute inset-0 backface-hidden bg-[#0a0c10] rounded-xl border-2 border-[#d4af37] flex flex-col items-center justify-center p-4">
-                        <div className="w-12 h-12 rounded-full border border-[#d4af37]/40 flex items-center justify-center">
-                            <div className="w-2 h-2 bg-[#d4af37] rounded-full animate-pulse" />
-                        </div>
-                    </div>
-                    <div className="absolute inset-0 backface-hidden rotate-y-180 bg-black rounded-xl border-2 border-[#d4af37] overflow-hidden p-2 flex flex-col">
-                       <img src={card.img} alt={card.name} className="flex-1 object-contain" />
-                       <div className="text-[9px] text-center mt-1 font-bold uppercase">{card.name}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-20 text-center">
-            <button onClick={resetTirage} className="px-8 py-2 border border-[#d4af37] rounded-full text-sm uppercase tracking-widest hover:bg-[#d4af37] hover:text-black transition-all">
-              Nouveau Tirage
-            </button>
-          </div>
+        <div className="max-w-4xl mx-auto grid grid-cols-3 gap-4">
+          {selectedCards.map((card, idx) => (
+            <div 
+              key={idx} 
+              className={`h-64 border-2 border-[#d4af37] rounded-xl flex items-center justify-center cursor-pointer overflow-hidden bg-[#111]
+                ${idx === 2 ? 'col-start-2 row-start-1' : idx === 3 ? 'col-start-2 row-start-3' : ''}`}
+              onClick={() => setFlipped(f => ({...f, [idx]: !f[idx]}))}
+            >
+              {flipped[idx] ? (
+                <img src={card.img} alt={card.name} className="w-full h-full object-contain" />
+              ) : (
+                <div className="text-center p-2 uppercase text-xs">Carte {idx + 1}</div>
+              )}
+            </div>
+          ))}
         </div>
       )}
 
-      <style>{`
-        .perspective-1000 { perspective: 1000px; }
-        .preserve-3d { transform-style: preserve-3d; }
-        .backface-hidden { backface-visibility: hidden; }
-        .rotate-y-180 { transform: rotateY(180deg); }
-      `}</style>
+      {selectedCards.length === 4 && (
+        <div className="text-center mt-10">
+          <button onClick={() => {setSelectedCards([]); setFlipped({});}} className="border border-[#d4af37] px-6 py-2 rounded">Recommencer</button>
+        </div>
+      )}
     </div>
   );
 }
