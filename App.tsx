@@ -33,7 +33,6 @@ export default function App() {
     setMounted(true);
   }, []);
 
-  // Empêche le rendu côté serveur de casser le site au chargement
   if (!mounted) return <div className="min-h-screen bg-black" />;
 
   const toggleCard = (id: number) => {
@@ -41,63 +40,56 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-[#d4af37] p-4 md:p-12 font-serif selection:bg-[#d4af37] selection:text-black">
-      <header className="max-w-7xl mx-auto text-center mb-16 relative">
-        <h1 className="text-4xl md:text-7xl font-bold tracking-[0.3em] uppercase mb-4 drop-shadow-[0_0_15px_rgba(212,175,55,0.4)]">
-          Les 22 Arcanes Majeurs
+    <div className="min-h-screen bg-[#050505] text-[#d4af37] p-4 md:p-8 font-serif">
+      <header className="max-w-7xl mx-auto text-center mb-10">
+        <h1 className="text-3xl md:text-5xl font-bold tracking-[0.2em] uppercase mb-2">
+          Le Rituel de Grimaud
         </h1>
-        <div className="flex items-center justify-center gap-4 text-[#d4af37]/60 italic text-lg">
-          <span className="text-2xl animate-pulse">✨</span>
-          <p>Cliquez sur une lame pour révéler son mystère</p>
-          <span className="text-2xl animate-pulse">✨</span>
-        </div>
+        <p className="text-[#d4af37]/60 italic">Choisissez vos lames pour le tirage</p>
       </header>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-10 max-w-[1600px] mx-auto pb-20">
+      {/* Grille ajustée : plus de colonnes, cartes plus petites */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-4 max-w-[1400px] mx-auto pb-20">
         {ARCANES_MAJEURS.map((card) => (
           <div 
             key={card.id}
             onClick={() => toggleCard(card.id)}
-            className="relative h-[480px] cursor-pointer group"
-            style={{ perspective: '2000px' }}
+            className="relative h-[280px] md:h-[320px] cursor-pointer group"
+            style={{ perspective: '1200px' }}
           >
             <div 
-              className="relative w-full h-full transition-all duration-[850ms]"
+              className="relative w-full h-full transition-all duration-700"
               style={{ 
                 transformStyle: 'preserve-3d',
                 transform: flipped[card.id] ? 'rotateY(180deg)' : 'rotateY(0deg)'
               }}
             >
               
-              {/* DOS DE LA CARTE */}
+              {/* DOS (Plus sobre) */}
               <div 
-                className="absolute inset-0 flex flex-col items-center justify-center bg-[#0a0c10] rounded-2xl border-[3px] border-[#d4af37] shadow-[0_0_40px_rgba(0,0,0,0.9)] overflow-hidden"
+                className="absolute inset-0 flex flex-col items-center justify-center bg-[#0a0a0a] rounded-xl border-2 border-[#d4af37]/50 shadow-lg"
                 style={{ backfaceVisibility: 'hidden' }}
               >
-                <div className="absolute inset-4 border border-[#d4af37]/10 rounded-xl pointer-events-none" />
-                <div className="text-6xl opacity-40 grayscale group-hover:grayscale-0 transition-all duration-500">👁️</div>
-                <span className="mt-8 text-[10px] tracking-[0.5em] opacity-30 uppercase">Arcane {card.id}</span>
+                <div className="text-3xl opacity-40">👁️</div>
               </div>
 
-              {/* FACE DE LA CARTE */}
+              {/* FACE (Dessin préservé mais ajusté) */}
               <div 
-                className="absolute inset-0 bg-[#0d0d0d] rounded-2xl p-4 flex flex-col border-[4px] border-[#d4af37]"
+                className="absolute inset-0 bg-[#0d0d0d] rounded-xl p-2 flex flex-col border-2 border-[#d4af37]"
                 style={{ 
                   backfaceVisibility: 'hidden', 
                   transform: 'rotateY(180deg)' 
                 }}
               >
-                <div className="relative flex-1 w-full border border-[#d4af37]/40 rounded-lg overflow-hidden bg-black flex items-center justify-center">
+                <div className="relative flex-1 w-full border border-[#d4af37]/20 rounded-lg overflow-hidden bg-black flex items-center justify-center">
                   <img 
                     src={card.img} 
                     alt={card.name} 
-                    className="max-h-[90%] max-w-[90%] object-contain z-10 sepia-[0.3] brightness-110" 
+                    className="max-h-full max-w-full object-contain" 
                   />
-                  {/* Texture de fond pour un effet parchemin/ancien */}
-                  <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/dark-leather.png')] opacity-20 pointer-events-none"></div>
                 </div>
-                <div className="h-12 flex items-center justify-center">
-                  <span className="text-lg font-bold tracking-[0.2em] text-[#d4af37] uppercase">{card.name}</span>
+                <div className="h-8 flex items-center justify-center">
+                  <span className="text-[10px] md:text-xs font-bold tracking-widest uppercase">{card.name}</span>
                 </div>
               </div>
 
