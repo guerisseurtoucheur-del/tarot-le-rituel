@@ -1,273 +1,106 @@
+import React, { useState } from 'react';
+import { HelpCircle, Sparkles } from 'lucide-react';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { TarotCardType, GameState } from './types';
-import { TAROT_DECK } from './constants/tarotDeck';
-import { getReading } from './services/geminiService';
-import TarotCard from './components/TarotCard';
-import Typewriter from './components/Typewriter';
-import AudioControl from './components/AudioControl';
+// Liste complète des 22 Arcanes Majeurs
+const ARCANES_MAJEURS = [
+  { id: 0, name: "Le Mat", img: "https://www.sacred-texts.com/tarot/pkt/img/ar00.jpg" },
+  { id: 1, name: "Le Bateleur", img: "https://www.sacred-texts.com/tarot/pkt/img/ar01.jpg" },
+  { id: 2, name: "La Papesse", img: "https://www.sacred-texts.com/tarot/pkt/img/ar02.jpg" },
+  { id: 3, name: "L'Impératrice", img: "https://www.sacred-texts.com/tarot/pkt/img/ar03.jpg" },
+  { id: 4, name: "L'Empereur", img: "https://www.sacred-texts.com/tarot/pkt/img/ar04.jpg" },
+  { id: 5, name: "Le Pape", img: "https://www.sacred-texts.com/tarot/pkt/img/ar05.jpg" },
+  { id: 6, name: "L'Amoureux", img: "https://www.sacred-texts.com/tarot/pkt/img/ar06.jpg" },
+  { id: 7, name: "Le Chariot", img: "https://www.sacred-texts.com/tarot/pkt/img/ar07.jpg" },
+  { id: 8, name: "La Justice", img: "https://www.sacred-texts.com/tarot/pkt/img/ar08.jpg" },
+  { id: 9, name: "L'Ermite", img: "https://www.sacred-texts.com/tarot/pkt/img/ar09.jpg" },
+  { id: 10, name: "La Roue de Fortune", img: "https://www.sacred-texts.com/tarot/pkt/img/ar10.jpg" },
+  { id: 11, name: "La Force", img: "https://www.sacred-texts.com/tarot/pkt/img/ar11.jpg" },
+  { id: 12, name: "Le Pendu", img: "https://www.sacred-texts.com/tarot/pkt/img/ar12.jpg" },
+  { id: 13, name: "L'Arcane sans nom", img: "https://www.sacred-texts.com/tarot/pkt/img/ar13.jpg" },
+  { id: 14, name: "Tempérance", img: "https://www.sacred-texts.com/tarot/pkt/img/ar14.jpg" },
+  { id: 15, name: "Le Diable", img: "https://www.sacred-texts.com/tarot/pkt/img/ar15.jpg" },
+  { id: 16, name: "La Maison Dieu", img: "https://www.sacred-texts.com/tarot/pkt/img/ar16.jpg" },
+  { id: 17, name: "L'Étoile", img: "https://www.sacred-texts.com/tarot/pkt/img/ar17.jpg" },
+  { id: 18, name: "La Lune", img: "https://www.sacred-texts.com/tarot/pkt/img/ar18.jpg" },
+  { id: 19, name: "Le Soleil", img: "https://www.sacred-texts.com/tarot/pkt/img/ar19.jpg" },
+  { id: 20, name: "Le Jugement", img: "https://www.sacred-texts.com/tarot/pkt/img/ar20.jpg" },
+  { id: 21, name: "Le Monde", img: "https://www.sacred-texts.com/tarot/pkt/img/ar21.jpg" },
+];
 
-// Helper to shuffle the deck
-const shuffleDeck = (deck: TarotCardType[]): TarotCardType[] => {
-  return [...deck].sort(() => Math.random() - 0.5);
-};
+export default function App() {
+  const [flipped, setFlipped] = useState<Record<number, boolean>>({});
 
-// Custom Plaque Button to match the reference image (Wood & Gold style)
-const PlaqueButton: React.FC<{onClick: () => void; children: React.ReactNode; disabled?: boolean; secondary?: boolean}> = ({onClick, children, disabled, secondary}) => {
-    return (
-        <motion.button
-            onClick={onClick}
-            disabled={disabled}
-            whileHover={{ scale: disabled ? 1: 1.02, filter: 'brightness(1.1)' }}
-            whileTap={{ scale: disabled ? 1: 0.98 }}
-            className={`relative group px-8 py-3 min-w-[200px] flex items-center justify-center ${disabled ? 'opacity-60 grayscale cursor-not-allowed' : 'cursor-pointer'}`}
-        >
-            {/* Background Texture (CSS gradient to simulate wood) */}
-            <div className="absolute inset-0 rounded-lg border-2 border-[#a27c3f] shadow-[0_0_15px_rgba(0,0,0,0.8)]"
-                 style={{
-                     background: 'linear-gradient(180deg, #463015 0%, #291a0a 100%)',
-                     boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.2), 0 4px 6px rgba(0,0,0,0.5)'
-                 }}>
-                 {/* Inner border for detail */}
-                 <div className="absolute inset-[2px] border border-[#6b5026] rounded-md"></div>
-            </div>
-            
-            {/* Ornaments (Left/Right) - Simulated with CSS */}
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-6 bg-[#a27c3f] rounded-l-sm shadow-md"></div>
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1 w-2 h-6 bg-[#a27c3f] rounded-r-sm shadow-md"></div>
-
-            {/* Text */}
-            <span className="relative z-10 font-cinzel font-bold text-[#fde08d] text-sm md:text-base uppercase tracking-widest drop-shadow-[0_2px_2px_rgba(0,0,0,1)]">
-                {children}
-            </span>
-        </motion.button>
-    )
-}
-
-const App: React.FC = () => {
-  const [gameState, setGameState] = useState<GameState>(GameState.INITIAL);
-  const [deck, setDeck] = useState<TarotCardType[]>(shuffleDeck(TAROT_DECK));
-  const [drawnCards, setDrawnCards] = useState<TarotCardType[]>([]);
-  const [reading, setReading] = useState<string>('');
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [userQuestion, setUserQuestion] = useState('');
-  const [currentDate, setCurrentDate] = useState(new Date());
-
-  const canReveal = userQuestion.trim().length > 0 && !isLoading;
-  const canDeepen = !isLoading && reading && drawnCards.length === 4;
-  const isFinalReading = drawnCards.length === 6 && !isLoading;
-
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentDate(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  // Initialize the "Table" with 4 cards face up (or ready to be read)
-  useEffect(() => {
-      handleStartRitual();
-  }, []);
-
-  const handleStartRitual = () => {
-    const newDeck = shuffleDeck(TAROT_DECK);
-    // Draw 4 cards immediately
-    const initialDrawn = newDeck.slice(0, 4).map(card => ({...card, revealed: true})); 
-    setDeck(newDeck.slice(4));
-    setDrawnCards(initialDrawn);
-    setReading('');
-    setUserQuestion('');
-    setGameState(GameState.DEALT);
+  const toggleCard = (id: number) => {
+    setFlipped(prev => ({ ...prev, [id]: !prev[id] }));
   };
-  
-  const handleDeepenDestiny = () => {
-    const additionalCards = deck.slice(0, 2).map(card => ({...card, revealed: true}));
-    setDeck(deck.slice(2));
-    const newDrawnCards = [...drawnCards, ...additionalCards];
-    setDrawnCards(newDrawnCards);
-    
-    // Animate into reading
-    fetchReading(newDrawnCards, true);
-    setGameState(GameState.DEEPENING);
-  };
-
-  const fetchReading = useCallback(async (currentCards: TarotCardType[], isDeepening = false) => {
-      setIsLoading(true);
-      
-      const previousReading = isDeepening ? reading : undefined;
-  
-      try {
-          const newReading = await getReading(currentCards, userQuestion, previousReading);
-          setReading(newReading);
-          if(currentCards.length === 4) {
-              setGameState(GameState.READING);
-          } else {
-              setGameState(GameState.FINAL_READING);
-          }
-      } catch (error) {
-          console.error("Error fetching reading:", error);
-          setReading("La connexion avec les esprits a été perdue. Veuillez réessayer.");
-      } finally {
-          setIsLoading(false);
-      }
-  }, [userQuestion, reading]);
 
   return (
-    <div className="bg-black min-h-screen w-full flex items-center justify-center p-2 md:p-8 font-cinzel overflow-hidden">
-        
-        {/* Laptop Frame Container */}
-        <div className="relative w-full max-w-[1400px] aspect-video bg-[#0f0f0f] rounded-2xl shadow-2xl ring-1 ring-gray-800 flex flex-col overflow-hidden">
-            
-            {/* Webcam / Bezel details */}
-            <div className="absolute top-0 w-full h-4 bg-black/50 z-50 flex justify-center items-center">
-                 <div className="w-1.5 h-1.5 rounded-full bg-gray-600"></div>
-            </div>
-
-            {/* Screen Content */}
-            <div className="relative w-full h-full bg-cover bg-center"
-                 style={{ 
-                     // Using a mystical background image to simulate the room
-                     backgroundImage: "url('https://images.unsplash.com/photo-1596280628766-07e324d3d1e9?q=80&w=2670&auto=format&fit=crop')",
-                 }}>
-                
-                {/* Dark Overlay for readability */}
-                <div className="absolute inset-0 bg-black/40 bg-gradient-to-t from-black/90 via-black/20 to-black/60"></div>
-
-                {/* Main UI Layer */}
-                <div className="absolute inset-0 flex flex-col justify-between p-6 md:p-8 z-10">
-                    
-                    {/* Header */}
-                    <header className="flex justify-between items-start">
-                        <div className="flex flex-col">
-                           {/* Logo removed */}
-                        </div>
-                        <motion.button 
-                            whileHover={{ scale: 1.1, rotate: 180 }}
-                            className="w-10 h-10 rounded-full border-2 border-[#fde08d] text-[#fde08d] flex items-center justify-center font-bold text-xl bg-black/30 backdrop-blur-sm"
-                        >
-                            ?
-                        </motion.button>
-                    </header>
-
-                    {/* Main Content Area */}
-                    <main className="flex-grow flex flex-col items-center justify-center -mt-8">
-                        
-                        {/* Title Section */}
-                        <div className="text-center mb-6">
-                            <motion.h2 
-                                initial={{ opacity: 0, y: -20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="text-3xl md:text-5xl font-bold text-[#fde08d] drop-shadow-[0_2px_8px_rgba(0,0,0,1)] tracking-wide mb-2"
-                            >
-                                TIRAGE INITIAL DE {drawnCards.length} CARTES
-                            </motion.h2>
-                            <motion.p 
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1, delay: 0.3 }}
-                                className="text-[#e0c097] text-lg md:text-xl italic font-serif tracking-wide drop-shadow-md"
-                            >
-                                {gameState === GameState.READING || gameState === GameState.FINAL_READING 
-                                    ? "Les arcanes ont parlé..." 
-                                    : "Posez votre question... et révèle votre chemin.."}
-                            </motion.p>
-                        </div>
-
-                        {/* Cards Layout */}
-                        <div className="relative w-full max-w-5xl h-[250px] md:h-[320px] flex justify-center items-center gap-4 md:gap-8 perspective-1000 mb-8">
-                            <AnimatePresence>
-                                {drawnCards.map((card, index) => (
-                                    <motion.div
-                                        key={card.name}
-                                        initial={{ opacity: 0, y: 50, rotateX: 30 }}
-                                        animate={{ opacity: 1, y: 0, rotateX: 0 }}
-                                        transition={{ delay: index * 0.15, type: 'spring', damping: 12 }}
-                                        className="relative shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
-                                    >
-                                        <TarotCard card={card} isRevealed={!!card.revealed} />
-                                    </motion.div>
-                                ))}
-                            </AnimatePresence>
-                        </div>
-
-                        {/* Input & Actions Zone */}
-                        <div className="w-full max-w-3xl flex flex-col items-center gap-6">
-                            
-                            {/* Question Input (Only visible before reading) */}
-                            {gameState === GameState.DEALT && (
-                                <motion.div 
-                                    initial={{ opacity: 0 }} 
-                                    animate={{ opacity: 1 }}
-                                    className="w-full max-w-xl"
-                                >
-                                    <input
-                                        type="text"
-                                        value={userQuestion}
-                                        onChange={(e) => setUserQuestion(e.target.value)}
-                                        placeholder="Écrivez votre question ici..."
-                                        className="w-full bg-transparent border-b border-[#a27c3f]/50 text-[#fde08d] text-center text-xl md:text-2xl p-2 focus:outline-none focus:border-[#fde08d] transition-colors placeholder-[#a27c3f]/50 font-serif italic"
-                                    />
-                                </motion.div>
-                            )}
-
-                            {/* Reading Display */}
-                            {(reading || isLoading) && (
-                                <motion.div 
-                                    initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                                    className="w-full bg-black/60 border border-[#a27c3f]/30 p-6 rounded-lg backdrop-blur-sm min-h-[120px] text-center"
-                                >
-                                    {isLoading ? (
-                                        <p className="text-[#e0c097] animate-pulse italic">La cartomancienne consulte les étoiles...</p>
-                                    ) : (
-                                        <div className="text-[#fde08d] text-lg leading-relaxed shadow-black drop-shadow-md">
-                                            <Typewriter text={reading} speed={0.02} />
-                                        </div>
-                                    )}
-                                </motion.div>
-                            )}
-
-                            {/* Action Buttons */}
-                            <div className="flex flex-col md:flex-row gap-6 mt-2 items-center">
-                                {gameState === GameState.DEALT && (
-                                    <PlaqueButton onClick={() => fetchReading(drawnCards)} disabled={!canReveal}>
-                                        RÉVÉLER MON DESTIN
-                                    </PlaqueButton>
-                                )}
-                                
-                                {canDeepen && (
-                                    <PlaqueButton onClick={handleDeepenDestiny}>
-                                        APPROFONDIR LE TIRAGE (2 CARTES)
-                                    </PlaqueButton>
-                                )}
-
-                                {(isFinalReading || (gameState === GameState.READING && drawnCards.length === 4)) && (
-                                    <motion.button
-                                        onClick={handleStartRitual}
-                                        whileHover={{ scale: 1.05 }}
-                                        className="text-[#a27c3f] border-b border-[#a27c3f] text-sm uppercase tracking-widest hover:text-[#fde08d] hover:border-[#fde08d] transition-colors mt-2"
-                                    >
-                                        Nouveau Rituel
-                                    </motion.button>
-                                )}
-                            </div>
-                        </div>
-
-                    </main>
-
-                    {/* Footer */}
-                    <footer className="flex justify-between items-end text-[#a27c3f] text-xs md:text-sm font-bold tracking-widest uppercase">
-                        <AudioControl />
-                        <div className="text-right">
-                             {currentDate.toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }).replace(':', 'H')} PM CET
-                        </div>
-                    </footer>
-
-                </div>
-            </div>
+    <div className="min-h-screen bg-[#050505] text-[#d4af37] p-4 md:p-12 font-serif">
+      {/* Header Statif */}
+      <header className="max-w-7xl mx-auto text-center mb-16 relative">
+        <div className="absolute top-0 right-0 p-4">
+          <HelpCircle className="w-8 h-8 opacity-40 hover:opacity-100 cursor-help transition-all" />
         </div>
-        
-        {/* Reflection under laptop (Optional polish) */}
-        <div className="fixed bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-red-900/10 to-transparent pointer-events-none"></div>
+        <h1 className="text-4xl md:text-7xl font-bold tracking-[0.3em] uppercase mb-4 drop-shadow-[0_0_15px_rgba(212,175,55,0.3)]">
+          Les 22 Arcanes Majeurs
+        </h1>
+        <div className="flex items-center justify-center gap-4 text-[#d4af37]/60 italic text-lg">
+          <Sparkles className="w-5 h-5" />
+          <p>Cliquez sur une lame pour révéler son mystère</p>
+          <Sparkles className="w-5 h-5" />
+        </div>
+      </header>
+
+      {/* Grille des 22 cartes */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-10 max-w-[1600px] mx-auto pb-20">
+        {ARCANES_MAJEURS.map((card) => (
+          <div 
+            key={card.id}
+            onClick={() => toggleCard(card.id)}
+            className="relative h-[480px] cursor-pointer group perspective-1000"
+          >
+            <div className={`relative w-full h-full transition-all duration-[850ms] preserve-3d ${flipped[card.id] ? 'rotate-y-180' : 'hover:scale-[1.04]'}`}>
+              
+              {/* DOS (LE GRIMOIRE) */}
+              <div className="absolute inset-0 backface-hidden flex flex-col items-center justify-center bg-[#0a0c10] rounded-2xl border-[3px] border-[#d4af37] shadow-[0_0_40px_rgba(0,0,0,0.9)] overflow-hidden">
+                <div className="absolute inset-4 border border-[#d4af37]/10 rounded-xl pointer-events-none" />
+                <svg viewBox="0 0 100 100" className="w-32 h-32 z-10 opacity-80">
+                  <path d="M50 15 L85 75 L15 75 Z" fill="none" stroke="#d4af37" strokeWidth="0.8" />
+                  <path d="M30 52 Q50 30 70 52 Q50 74 30 52" fill="none" stroke="#d4af37" strokeWidth="1" />
+                  <circle cx="50" cy="52" r="5" fill="#d4af37" />
+                  <circle cx="50" cy="50" r="45" fill="none" stroke="#d4af37" strokeWidth="0.1" />
+                </svg>
+                <span className="mt-8 text-[10px] tracking-[0.5em] opacity-30 uppercase">Arcane {card.id}</span>
+              </div>
+
+              {/* DEVANT (L'ILLUSTRATION) */}
+              <div className="absolute inset-0 backface-hidden rotate-y-180 bg-[#0d0d0d] rounded-2xl p-4 flex flex-col border-[4px] border-[#d4af37] shadow-[0_0_40px_rgba(212,175,55,0.1)]">
+                <div className="relative flex-1 w-full border border-[#d4af37]/40 rounded-lg overflow-hidden bg-black flex items-center justify-center">
+                  <img 
+                    src={card.img} 
+                    alt={card.name} 
+                    className="max-h-[90%] max-w-[90%] object-contain z-10 sepia-[0.4] brightness-90" 
+                  />
+                  <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/aged-paper.png')] opacity-10 mix-blend-overlay" />
+                </div>
+                <div className="h-12 flex items-center justify-center">
+                  <span className="text-lg font-bold tracking-[0.2em] text-[#d4af37] uppercase font-serif drop-shadow-md">
+                    {card.name}
+                  </span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <style>{`
+        .perspective-1000 { perspective: 2000px; }
+        .preserve-3d { transform-style: preserve-3d; }
+        .backface-hidden { backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+      `}</style>
     </div>
   );
-};
-
-export default App;
+}
