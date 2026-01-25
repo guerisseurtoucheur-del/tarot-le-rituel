@@ -2,48 +2,56 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
+const SpeakerOnIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+    </svg>
+);
+
+const SpeakerOffIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l-4-4m0 4l4-4" />
+    </svg>
+);
+
+
 const AudioControl: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
+
+  // Placeholder music URL
+  const musicUrl = 'https://cdn.pixabay.com/download/audio/2022/11/21/audio_a21a5c68c3.mp3';
+
+  useEffect(() => {
+    if (audioRef.current) {
+        audioRef.current.loop = true;
+    }
+  }, []);
 
   const togglePlay = () => {
     if (audioRef.current) {
       if (isPlaying) {
         audioRef.current.pause();
       } else {
-        audioRef.current.play().catch(e => console.log("Audio focus needed"));
+        audioRef.current.play().catch(e => console.log("Audio play failed:", e));
       }
       setIsPlaying(!isPlaying);
     }
   };
 
   return (
-    <div className="flex items-center gap-4">
-      <audio ref={audioRef} src="https://cdn.pixabay.com/download/audio/2022/11/21/audio_a21a5c68c3.mp3" loop />
+    <div className='flex items-center gap-2'>
+      <audio ref={audioRef} src={musicUrl} preload="auto"></audio>
       <motion.button
         onClick={togglePlay}
+        className="p-2 rounded-full"
         whileHover={{ scale: 1.1 }}
-        className="text-[#fde08d]"
+        whileTap={{ scale: 0.9 }}
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-          {isPlaying ? (
-            <>
-              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-            </>
-          ) : (
-            <line x1="23" y1="9" x2="17" y2="15"></line>
-          )}
-        </svg>
+        {isPlaying ? <SpeakerOnIcon /> : <SpeakerOffIcon />}
       </motion.button>
-      
-      {/* Barre de volume horizontale */}
-      <div className="w-32 h-1 bg-[#c5a059]/20 relative rounded-full">
-        <div className="absolute top-0 left-0 w-3/4 h-full bg-[#c5a059] rounded-full"></div>
-      </div>
-
-      <span className="text-[10px] md:text-xs tracking-[0.2em] whitespace-nowrap">MUSIQUE : MÉLODIE TZIGANE ANCESTRALE</span>
+      <span className='text-xs tracking-widest'>MUSIQUE : MÉLODIE TZIGANE ANCESTRALE</span>
     </div>
   );
 };
