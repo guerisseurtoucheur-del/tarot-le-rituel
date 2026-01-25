@@ -26,14 +26,15 @@ const ARCANES_MAJEURS = [
 ];
 
 export default function App() {
-  const [isClient, setIsClient] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [selectedCards, setSelectedCards] = useState<any[]>([]);
   const [flipped, setFlipped] = useState<Record<number, boolean>>({});
 
-  // Sécurité pour Vercel (évite les erreurs d'hydratation)
   useEffect(() => {
-    setIsClient(true);
+    setMounted(true);
   }, []);
+
+  if (!mounted) return null;
 
   const selectCard = (card: any) => {
     if (selectedCards.length < 4 && !selectedCards.find(c => c.id === card.id)) {
@@ -41,51 +42,98 @@ export default function App() {
     }
   };
 
-  if (!isClient) return null;
+  const reset = () => {
+    setSelectedCards([]);
+    setFlipped({});
+  };
+
+  const positions = [
+    { label: "Le Présent", pos: "md:col-start-1 md:row-start-2" },
+    { label: "L'Obstacle", pos: "md:col-start-3 md:row-start-2" },
+    { label: "Le Conseil", pos: "md:col-start-2 md:row-start-1" },
+    { label: "L'Issue", pos: "md:col-start-2 md:row-start-3" },
+  ];
 
   return (
-    <div className="min-h-screen bg-black text-[#d4af37] p-4 md:p-10">
-      <h1 className="text-center text-3xl font-bold uppercase tracking-widest mb-10">
-        Salon de Cartomancie
-      </h1>
+    <div className="min-h-screen bg-[#050505] text-[#d4af37] p-4 font-serif selection:bg-[#d4af37] selection:text-black">
+      {/* HEADER */}
+      <header className="max-w-4xl mx-auto text-center py-10">
+        <h1 className="text-4xl md:text-6xl font-bold tracking-[0.2em] uppercase mb-4 drop-shadow-2xl">
+          Salon de Cartomancie
+        </h1>
+        <div className="h-px w-32 bg-[#d4af37] mx-auto mb-6 opacity-50" />
+        <p className="text-lg italic opacity-70">
+          {selectedCards.length < 4 
+            ? `Veuillez choisir ${4 - selectedCards.length} arcanes pour commencer...` 
+            : "Le tirage est prêt. Retournez les lames pour voir votre chemin."}
+        </p>
+      </header>
 
+      {/* PHASE 1 : SÉLECTION */}
       {selectedCards.length < 4 ? (
-        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3 max-w-4xl mx-auto">
-          {ARCANES_MAJEURS.map((card) => (
-            <div 
-              key={card.id}
-              onClick={() => selectCard(card)}
-              className={`aspect-[2/3] border rounded cursor-pointer transition-all flex items-center justify-center
-                ${selectedCards.find(c => c.id === card.id) ? 'opacity-10 border-gray-600' : 'border-[#d4af37]/50 hover:border-[#d4af37]'}`}
-            >
-              <div className="text-[8px]">ARCANUM</div>
-            </div>
-          ))}
+        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-11 gap-3 max-w-6xl mx-auto pb-20">
+          {ARCANES_MAJEURS.map((card) => {
+            const isSelected = selectedCards.find(c => c.id === card.id);
+            return (
+              <div 
+                key={card.id}
+                onClick={() => selectCard(card)}
+                className={`aspect-[2/3] border-2 rounded-lg cursor-pointer transition-all duration-300 flex items-center justify-center bg-[#0a0a0a]
+                  ${isSelected ? 'opacity-10 border-gray-800 scale-90' : 'border-[#d4af37]/30 hover:border-[#d4af37] hover:-translate-y-2 shadow-lg shadow-black'}`}
+              >
+                <div className="text-[10px] tracking-tighter opacity-30 text-center">✧<br/>{card.id}<br/>✧</div>
+              </div>
+            );
+          })}
         </div>
       ) : (
-        <div className="max-w-4xl mx-auto grid grid-cols-3 gap-4">
-          {selectedCards.map((card, idx) => (
-            <div 
-              key={idx} 
-              className={`h-64 border-2 border-[#d4af37] rounded-xl flex items-center justify-center cursor-pointer overflow-hidden bg-[#111]
-                ${idx === 2 ? 'col-start-2 row-start-1' : idx === 3 ? 'col-start-2 row-start-3' : ''}`}
-              onClick={() => setFlipped(f => ({...f, [idx]: !f[idx]}))}
-            >
-              {flipped[idx] ? (
-                <img src={card.img} alt={card.name} className="w-full h-full object-contain" />
-              ) : (
-                <div className="text-center p-2 uppercase text-xs">Carte {idx + 1}</div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
+        /* PHASE 2 : LE TIRAGE EN CROIX */
+        <div className="max-w-5xl mx-auto py-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 md:grid-rows-3 gap-8 items-center justify-items-center">
+            {selectedCards.map((card, index) => (
+              <div key={index} className={`w-full max-w-[220px] ${positions[index].pos}`}>
+                <p className="text-center text-[10px] tracking-[0.3em] uppercase mb-3 opacity-40">{positions[index].label}</p>
+                
+                <div 
+                  className="relative h-[340px] w-full cursor-pointer [perspective:1000px]"
+                  onClick={() => setFlipped(prev => ({...prev, [index]: !prev[index]}))}
+                >
+                  <div className={`relative w-full h-full transition-all duration-700 [transform-style:preserve-3d] ${flipped[index] ? '[transform:rotateY(180deg)]' : ''}`}>
+                    
+                    {/* DOS (Style Grimoire) */}
+                    <div className="absolute inset-0 [backface-visibility:hidden] bg-[#0d0d0d] border-2 border-[#d4af37] rounded-xl flex items-center justify-center shadow-2xl">
+                      <div className="absolute inset-2 border border-[#d4af37]/10 rounded-lg" />
+                      <div className="text-4xl">👁</div>
+                    </div>
 
-      {selectedCards.length === 4 && (
-        <div className="text-center mt-10">
-          <button onClick={() => {setSelectedCards([]); setFlipped({});}} className="border border-[#d4af37] px-6 py-2 rounded">Recommencer</button>
+                    {/* FACE (L'image) */}
+                    <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] bg-black border-2 border-[#d4af37] rounded-xl overflow-hidden flex flex-col shadow-[0_0_30px_rgba(212,175,55,0.2)]">
+                      <img src={card.img} alt={card.name} className="flex-1 object-contain p-2 sepia-[0.3] brightness-90" />
+                      <div className="bg-[#d4af37] text-black text-center py-2 text-xs font-bold uppercase tracking-widest">
+                        {card.name}
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-20 text-center">
+            <button 
+              onClick={reset}
+              className="px-10 py-3 border border-[#d4af37] rounded-full text-xs uppercase tracking-[0.3em] hover:bg-[#d4af37] hover:text-black transition-all active:scale-95"
+            >
+              Nouveau Tirage
+            </button>
+          </div>
         </div>
       )}
+      
+      <footer className="text-center py-10 opacity-20 text-[10px] tracking-[0.5em] uppercase">
+        In Umbra Nihil Est
+      </footer>
     </div>
   );
 }
