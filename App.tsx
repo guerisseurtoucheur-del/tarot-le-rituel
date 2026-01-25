@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
+// Liste complète des 22 Arcanes Majeurs
 const ARCANES_MAJEURS = [
   { id: 0, name: "Le Mat", img: "https://www.sacred-texts.com/tarot/pkt/img/ar00.jpg" },
   { id: 1, name: "Le Bateleur", img: "https://www.sacred-texts.com/tarot/pkt/img/ar01.jpg" },
@@ -26,78 +27,72 @@ const ARCANES_MAJEURS = [
 ];
 
 export default function App() {
-  // CRUCIAL : Force React à attendre d'être sur le navigateur
   const [mounted, setMounted] = useState(false);
-  const [selectedCards, setSelectedCards] = useState<any[]>([]);
   const [flipped, setFlipped] = useState<Record<number, boolean>>({});
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  if (!mounted) return <div className="bg-black min-h-screen" />;
-
-  const selectCard = (card: any) => {
-    if (selectedCards.length < 4 && !selectedCards.find(c => c.id === card.id)) {
-      setSelectedCards([...selectedCards, card]);
-    }
+  const toggleCard = (id: number) => {
+    setFlipped(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const positions = [
-    { label: "Le Présent", pos: "md:col-start-1 md:row-start-2" },
-    { label: "L'Obstacle", pos: "md:col-start-3 md:row-start-2" },
-    { label: "Le Conseil", pos: "md:col-start-2 md:row-start-1" },
-    { label: "L'Issue", pos: "md:col-start-2 md:row-start-3" },
-  ];
+  if (!mounted) return null;
 
   return (
-    <div className="min-h-screen bg-black text-[#d4af37] p-6 font-serif">
-      <h1 className="text-center text-4xl font-bold uppercase tracking-[0.2em] py-10">
-        Salon de Cartomancie
-      </h1>
-
-      {selectedCards.length < 4 ? (
-        /* SÉLECTION */
-        <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-11 gap-2 max-w-6xl mx-auto">
-          {ARCANES_MAJEURS.map((card) => (
-            <div 
-              key={card.id}
-              onClick={() => selectCard(card)}
-              className={`aspect-[2/3] border rounded cursor-pointer transition-all flex items-center justify-center bg-[#111]
-                ${selectedCards.find(c => c.id === card.id) ? 'opacity-5 border-transparent' : 'border-[#d4af37]/40 hover:border-[#d4af37]'}`}
-            >
-              <span className="text-[10px] opacity-20">{card.id}</span>
-            </div>
-          ))}
+    <div className="min-h-screen bg-[#050505] text-[#d4af37] p-4 md:p-12 font-serif">
+      <header className="max-w-7xl mx-auto text-center mb-16 relative">
+        <h1 className="text-4xl md:text-7xl font-bold tracking-[0.3em] uppercase mb-4 drop-shadow-[0_0_15px_rgba(212,175,55,0.3)]">
+          Les 22 Arcanes Majeurs
+        </h1>
+        <div className="flex items-center justify-center gap-4 text-[#d4af37]/60 italic text-lg">
+          <span>✨</span>
+          <p>Cliquez sur une lame pour révéler son mystère</p>
+          <span>✨</span>
         </div>
-      ) : (
-        /* TIRAGE EN CROIX */
-        <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 md:grid-rows-3 gap-6 pt-10 h-[800px] items-center">
-          {selectedCards.map((card, idx) => (
-            <div key={idx} className={`w-full ${positions[idx].pos}`}>
-              <p className="text-center text-[10px] mb-2 uppercase opacity-40 tracking-widest">{positions[idx].label}</p>
-              <div 
-                onClick={() => setFlipped(f => ({...f, [idx]: !f[idx]}))}
-                className="relative aspect-[2/3] border-2 border-[#d4af37] rounded-xl overflow-hidden cursor-pointer bg-[#0a0a0a]"
-              >
-                {flipped[idx] ? (
-                  <img src={card.img} className="w-full h-full object-contain p-1" alt={card.name} />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-3xl opacity-30">👁</div>
-                )}
+      </header>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-10 max-w-[1600px] mx-auto pb-20">
+        {ARCANES_MAJEURS.map((card) => (
+          <div 
+            key={card.id}
+            onClick={() => toggleCard(card.id)}
+            className="relative h-[480px] cursor-pointer group [perspective:2000px]"
+          >
+            <div className={`relative w-full h-full transition-all duration-[850ms] [transform-style:preserve-3d] ${flipped[card.id] ? '[transform:rotateY(180deg)]' : 'hover:scale-[1.04]'}`}>
+              
+              {/* DOS */}
+              <div className="absolute inset-0 [backface-visibility:hidden] flex flex-col items-center justify-center bg-[#0a0c10] rounded-2xl border-[3px] border-[#d4af37] shadow-[0_0_40px_rgba(0,0,0,0.9)] overflow-hidden">
+                <div className="absolute inset-4 border border-[#d4af37]/10 rounded-xl pointer-events-none" />
+                <div className="text-6xl opacity-40 italic">👁</div>
+                <span className="mt-8 text-[10px] tracking-[0.5em] opacity-30 uppercase">Arcane {card.id}</span>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
 
-      {selectedCards.length === 4 && (
-        <div className="text-center py-20">
-          <button onClick={() => {setSelectedCards([]); setFlipped({});}} className="border border-[#d4af37] px-8 py-2 hover:bg-[#d4af37] hover:text-black transition-all">
-            NOUVEAU TIRAGE
-          </button>
-        </div>
-      )}
+              {/* DEVANT */}
+              <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] bg-[#0d0d0d] rounded-2xl p-4 flex flex-col border-[4px] border-[#d4af37] shadow-[0_0_40px_rgba(212,175,55,0.1)]">
+                <div className="relative flex-1 w-full border border-[#d4af37]/40 rounded-lg overflow-hidden bg-black flex items-center justify-center">
+                  <img 
+                    src={card.img} 
+                    alt={card.name} 
+                    className="max-h-[90%] max-w-[90%] object-contain z-10 sepia-[0.4] brightness-90" 
+                  />
+                </div>
+                <div className="h-12 flex items-center justify-center">
+                  <span className="text-lg font-bold tracking-[0.2em] text-[#d4af37] uppercase font-serif">
+                    {card.name}
+                  </span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <style>{`
+        .rotate-y-180 { transform: rotateY(180deg); }
+      `}</style>
     </div>
   );
 }
