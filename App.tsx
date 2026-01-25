@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { HelpCircle, Sparkles } from 'lucide-react';
 
-// Liste complète des 22 Arcanes Majeurs
+// Images stables
 const ARCANES_MAJEURS = [
   { id: 0, name: "Le Mat", img: "https://www.sacred-texts.com/tarot/pkt/img/ar00.jpg" },
   { id: 1, name: "Le Bateleur", img: "https://www.sacred-texts.com/tarot/pkt/img/ar01.jpg" },
@@ -28,75 +27,89 @@ const ARCANES_MAJEURS = [
 ];
 
 export default function App() {
+  const [selectedCards, setSelectedCards] = useState<any[]>([]);
   const [flipped, setFlipped] = useState<Record<number, boolean>>({});
 
-  const toggleCard = (id: number) => {
-    setFlipped(prev => ({ ...prev, [id]: !prev[id] }));
+  const selectCard = (card: any) => {
+    if (selectedCards.length < 4 && !selectedCards.find(c => c.id === card.id)) {
+      setSelectedCards([...selectedCards, card]);
+    }
   };
 
+  const resetTirage = () => {
+    setSelectedCards([]);
+    setFlipped({});
+  };
+
+  const positions = [
+    { label: "Le Présent", class: "col-start-1 row-start-2" },
+    { label: "L'Obstacle", class: "col-start-3 row-start-2" },
+    { label: "Le Conseil", class: "col-start-2 row-start-1" },
+    { label: "L'Issue", class: "col-start-2 row-start-3" },
+  ];
+
   return (
-    <div className="min-h-screen bg-[#050505] text-[#d4af37] p-4 md:p-12 font-serif">
-      {/* Header Statif */}
-      <header className="max-w-7xl mx-auto text-center mb-16 relative">
-        <div className="absolute top-0 right-0 p-4">
-          <HelpCircle className="w-8 h-8 opacity-40 hover:opacity-100 cursor-help transition-all" />
-        </div>
-        <h1 className="text-4xl md:text-7xl font-bold tracking-[0.3em] uppercase mb-4 drop-shadow-[0_0_15px_rgba(212,175,55,0.3)]">
-          Les 22 Arcanes Majeurs
-        </h1>
-        <div className="flex items-center justify-center gap-4 text-[#d4af37]/60 italic text-lg">
-          <Sparkles className="w-5 h-5" />
-          <p>Cliquez sur une lame pour révéler son mystère</p>
-          <Sparkles className="w-5 h-5" />
-        </div>
+    <div className="min-h-screen bg-[#050505] text-[#d4af37] p-4 md:p-8 font-serif">
+      <header className="text-center mb-8">
+        <h1 className="text-3xl md:text-5xl font-bold tracking-widest uppercase mb-2">Le Grand Tirage en Croix</h1>
+        <p className="text-[#d4af37]/60 italic">
+          {selectedCards.length < 4 
+            ? `Choisissez ${4 - selectedCards.length} cartes de votre main` 
+            : "Révélez votre destin..."}
+        </p>
       </header>
 
-      {/* Grille des 22 cartes */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-10 max-w-[1600px] mx-auto pb-20">
-        {ARCANES_MAJEURS.map((card) => (
-          <div 
-            key={card.id}
-            onClick={() => toggleCard(card.id)}
-            className="relative h-[480px] cursor-pointer group perspective-1000"
-          >
-            <div className={`relative w-full h-full transition-all duration-[850ms] preserve-3d ${flipped[card.id] ? 'rotate-y-180' : 'hover:scale-[1.04]'}`}>
-              
-              {/* DOS (LE GRIMOIRE) */}
-              <div className="absolute inset-0 backface-hidden flex flex-col items-center justify-center bg-[#0a0c10] rounded-2xl border-[3px] border-[#d4af37] shadow-[0_0_40px_rgba(0,0,0,0.9)] overflow-hidden">
-                <div className="absolute inset-4 border border-[#d4af37]/10 rounded-xl pointer-events-none" />
-                <svg viewBox="0 0 100 100" className="w-32 h-32 z-10 opacity-80">
-                  <path d="M50 15 L85 75 L15 75 Z" fill="none" stroke="#d4af37" strokeWidth="0.8" />
-                  <path d="M30 52 Q50 30 70 52 Q50 74 30 52" fill="none" stroke="#d4af37" strokeWidth="1" />
-                  <circle cx="50" cy="52" r="5" fill="#d4af37" />
-                  <circle cx="50" cy="50" r="45" fill="none" stroke="#d4af37" strokeWidth="0.1" />
-                </svg>
-                <span className="mt-8 text-[10px] tracking-[0.5em] opacity-30 uppercase">Arcane {card.id}</span>
+      {selectedCards.length < 4 ? (
+        <div className="flex flex-wrap justify-center gap-3 max-w-5xl mx-auto">
+          {ARCANES_MAJEURS.map((card) => {
+            const isSelected = selectedCards.find(c => c.id === card.id);
+            return (
+              <div 
+                key={card.id}
+                onClick={() => selectCard(card)}
+                className={`w-20 h-32 cursor-pointer transition-all border rounded-lg flex items-center justify-center bg-[#0a0c10]
+                  ${isSelected ? 'opacity-20 scale-90' : 'border-[#d4af37]/40 hover:border-[#d4af37] hover:-translate-y-1'}`}
+              >
+                <span className="text-[10px] opacity-40 uppercase">Arcane</span>
               </div>
-
-              {/* DEVANT (L'ILLUSTRATION) */}
-              <div className="absolute inset-0 backface-hidden rotate-y-180 bg-[#0d0d0d] rounded-2xl p-4 flex flex-col border-[4px] border-[#d4af37] shadow-[0_0_40px_rgba(212,175,55,0.1)]">
-                <div className="relative flex-1 w-full border border-[#d4af37]/40 rounded-lg overflow-hidden bg-black flex items-center justify-center">
-                  <img 
-                    src={card.img} 
-                    alt={card.name} 
-                    className="max-h-[90%] max-w-[90%] object-contain z-10 sepia-[0.4] brightness-90" 
-                  />
-                  <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/aged-paper.png')] opacity-10 mix-blend-overlay" />
-                </div>
-                <div className="h-12 flex items-center justify-center">
-                  <span className="text-lg font-bold tracking-[0.2em] text-[#d4af37] uppercase font-serif drop-shadow-md">
-                    {card.name}
-                  </span>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="max-w-4xl mx-auto mt-10">
+          <div className="grid grid-cols-3 grid-rows-3 gap-4 md:gap-8 items-center justify-items-center h-[600px]">
+            {selectedCards.map((card, index) => (
+              <div key={index} className={`w-full max-w-[160px] md:max-w-[200px] h-[260px] md:h-[320px] ${positions[index].class}`}>
+                <div className="text-center mb-2 text-[10px] tracking-widest uppercase opacity-40">{positions[index].label}</div>
+                <div 
+                  onClick={() => setFlipped(prev => ({...prev, [index]: !prev[index]}))}
+                  className="relative w-full h-full cursor-pointer perspective-1000"
+                >
+                  <div className={`relative w-full h-full transition-transform duration-700 preserve-3d ${flipped[index] ? 'rotate-y-180' : ''}`}>
+                    <div className="absolute inset-0 backface-hidden bg-[#0a0c10] rounded-xl border-2 border-[#d4af37] flex flex-col items-center justify-center p-4">
+                        <div className="w-12 h-12 rounded-full border border-[#d4af37]/40 flex items-center justify-center">
+                            <div className="w-2 h-2 bg-[#d4af37] rounded-full animate-pulse" />
+                        </div>
+                    </div>
+                    <div className="absolute inset-0 backface-hidden rotate-y-180 bg-black rounded-xl border-2 border-[#d4af37] overflow-hidden p-2 flex flex-col">
+                       <img src={card.img} alt={card.name} className="flex-1 object-contain" />
+                       <div className="text-[9px] text-center mt-1 font-bold uppercase">{card.name}</div>
+                    </div>
+                  </div>
                 </div>
               </div>
-
-            </div>
+            ))}
           </div>
-        ))}
-      </div>
+          <div className="mt-20 text-center">
+            <button onClick={resetTirage} className="px-8 py-2 border border-[#d4af37] rounded-full text-sm uppercase tracking-widest hover:bg-[#d4af37] hover:text-black transition-all">
+              Nouveau Tirage
+            </button>
+          </div>
+        </div>
+      )}
 
       <style>{`
-        .perspective-1000 { perspective: 2000px; }
+        .perspective-1000 { perspective: 1000px; }
         .preserve-3d { transform-style: preserve-3d; }
         .backface-hidden { backface-visibility: hidden; }
         .rotate-y-180 { transform: rotateY(180deg); }
