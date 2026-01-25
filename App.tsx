@@ -21,19 +21,23 @@ const MainPlaqueButton: React.FC<{onClick: () => void; children: React.ReactNode
     whileTap={disabled ? {} : { scale: 0.98 }}
     className={`relative px-12 py-5 flex items-center justify-center min-w-[300px] ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
   >
-    {/* Fond Plaque Bois */}
-    <div className="absolute inset-0 border-[3px] border-[#c5a059] rounded-sm shadow-[0_10px_30px_rgba(0,0,0,0.8)]"
+    {/* Fond Plaque Bois avec texture */}
+    <div className="absolute inset-0 border-[3px] border-[#c5a059] rounded-sm shadow-[0_10px_40px_rgba(0,0,0,0.9)]"
          style={{
            background: 'linear-gradient(180deg, #3d2b14 0%, #1a1108 100%)',
-           boxShadow: 'inset 0 0 15px rgba(0,0,0,0.9), 0 5px 20px rgba(0,0,0,0.7)'
+           boxShadow: 'inset 0 0 20px rgba(0,0,0,1), 0 8px 25px rgba(0,0,0,0.8)'
          }}>
+      {/* Texture bois subtile */}
+      <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'url(https://www.transparenttextures.com/patterns/dark-matter.png)' }}></div>
+      
       {/* Ornements dorés aux coins */}
-      <div className="absolute -top-1 -left-1 w-5 h-5 border-t-[4px] border-l-[4px] border-[#fde08d] shadow-[0_0_5px_#fde08d]"></div>
-      <div className="absolute -top-1 -right-1 w-5 h-5 border-t-[4px] border-r-[4px] border-[#fde08d] shadow-[0_0_5px_#fde08d]"></div>
-      <div className="absolute -bottom-1 -left-1 w-5 h-5 border-b-[4px] border-l-[4px] border-[#fde08d] shadow-[0_0_5px_#fde08d]"></div>
-      <div className="absolute -bottom-1 -right-1 w-5 h-5 border-b-[4px] border-r-[4px] border-[#fde08d] shadow-[0_0_5px_#fde08d]"></div>
+      <div className="absolute -top-1 -left-1 w-6 h-6 border-t-[4px] border-l-[4px] border-[#fde08d] shadow-[0_0_8px_rgba(253,224,141,0.4)]"></div>
+      <div className="absolute -top-1 -right-1 w-6 h-6 border-t-[4px] border-r-[4px] border-[#fde08d] shadow-[0_0_8px_rgba(253,224,141,0.4)]"></div>
+      <div className="absolute -bottom-1 -left-1 w-6 h-6 border-b-[4px] border-l-[4px] border-[#fde08d] shadow-[0_0_8px_rgba(253,224,141,0.4)]"></div>
+      <div className="absolute -bottom-1 -right-1 w-6 h-6 border-b-[4px] border-r-[4px] border-[#fde08d] shadow-[0_0_8px_rgba(253,224,141,0.4)]"></div>
     </div>
-    <span className="relative z-10 font-cinzel font-bold text-[#fde08d] text-lg md:text-xl tracking-[0.25em] uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,1)]">
+    
+    <span className="relative z-10 font-cinzel font-bold text-[#fde08d] text-xl md:text-2xl tracking-[0.3em] uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,1)]">
       {children}
     </span>
   </motion.button>
@@ -44,7 +48,7 @@ const SecondaryButton: React.FC<{onClick: () => void; children: React.ReactNode;
     onClick={onClick}
     disabled={disabled}
     whileHover={disabled ? {} : { scale: 1.05, color: '#fde08d' }}
-    className={`px-8 py-3 border border-[#c5a059]/40 rounded-full text-[#c5a059] font-cinzel text-[10px] md:text-xs tracking-[0.2em] uppercase transition-all bg-black/20 backdrop-blur-sm ${disabled ? 'opacity-30' : 'hover:border-[#fde08d] shadow-lg'}`}
+    className={`px-8 py-3 border border-[#c5a059]/40 rounded-full text-[#c5a059] font-cinzel text-[10px] md:text-xs tracking-[0.2em] uppercase transition-all bg-black/40 backdrop-blur-md ${disabled ? 'opacity-30' : 'hover:border-[#fde08d] shadow-xl'}`}
   >
     {children}
   </motion.button>
@@ -83,7 +87,7 @@ const App: React.FC = () => {
       setReading(res);
       setGameState(isDeepening ? GameState.FINAL_READING : GameState.READING);
     } catch (e) {
-      setReading("Les cieux sont voilés. L'astral ne répond pas.");
+      setReading("Les cieux sont voilés. L'astral ne répond pas à votre appel.");
     } finally {
       setIsLoading(false);
     }
@@ -99,24 +103,24 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen w-full bg-[#050505] flex items-center justify-center p-4 md:p-10 overflow-hidden font-cinzel">
       {/* Laptop Frame */}
-      <div className="relative w-full max-w-[1400px] aspect-[16/10] bg-[#1a1a1a] rounded-t-3xl border-x-[14px] border-t-[14px] border-[#252525] shadow-[0_0_100px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col">
+      <div className="relative w-full max-w-[1400px] aspect-[16/10] bg-[#1a1a1a] rounded-t-3xl border-x-[14px] border-t-[14px] border-[#252525] shadow-[0_0_120px_rgba(0,0,0,0.9)] overflow-hidden flex flex-col">
         
         {/* Screen Content */}
         <div className="relative flex-grow bg-cover bg-center" 
              style={{ backgroundImage: "url('https://i.imgur.com/3sPjB0p.jpeg')" }}>
           
-          {/* Overlays */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-black/50"></div>
-          <div className="absolute inset-0 bg-black/20 backdrop-brightness-75"></div>
+          {/* Overlays pour l'immersion */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-transparent to-black/60"></div>
+          <div className="absolute inset-0 bg-black/10 backdrop-brightness-90"></div>
 
           {/* HUD Content */}
           <div className="absolute inset-0 p-10 flex flex-col justify-between z-10">
             
-            {/* Top Bar - Clean */}
+            {/* Top Bar - Purifié sans aucun logo */}
             <header className="flex justify-end items-start">
               <motion.button 
                 whileHover={{ scale: 1.1, rotate: 15 }}
-                className="w-12 h-12 rounded-full border-2 border-[#fde08d]/50 flex items-center justify-center text-[#fde08d] bg-black/40 backdrop-blur-md shadow-lg"
+                className="w-12 h-12 rounded-full border-2 border-[#fde08d]/50 flex items-center justify-center text-[#fde08d] bg-black/60 backdrop-blur-md shadow-[0_0_15px_rgba(253,224,141,0.2)]"
               >
                 <span className="text-2xl font-serif font-bold">?</span>
               </motion.button>
@@ -125,27 +129,28 @@ const App: React.FC = () => {
             {/* Middle Content */}
             <main className="flex-grow flex flex-col items-center justify-center text-center">
               <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="mb-4"
+                className="mb-6"
               >
-                <h1 className="text-4xl md:text-6xl font-bold text-[#fde08d] tracking-[0.1em] uppercase drop-shadow-[0_5px_15px_rgba(0,0,0,1)]">
+                <h1 className="text-4xl md:text-6xl font-bold text-[#fde08d] tracking-[0.15em] uppercase drop-shadow-[0_5px_20px_rgba(0,0,0,1)]">
                   TIRAGE INITIAL DE {drawnCards.length} CARTES
                 </h1>
-                <p className="text-[#e0c097] italic text-xl md:text-2xl mt-4 drop-shadow-lg opacity-90">
-                  Posez votre question... et révèle voutr chemin..
+                <p className="text-[#e0c097] italic text-xl md:text-2xl mt-4 drop-shadow-xl opacity-90 tracking-wide">
+                  Posez votre question... et révelez votre chemin...
                 </p>
               </motion.div>
 
-              {/* Cards Deck */}
+              {/* Cards Deck Area */}
               <div className="flex gap-4 md:gap-8 my-10 perspective-1000">
-                <AnimatePresence>
+                <AnimatePresence mode='popLayout'>
                   {drawnCards.map((card, i) => (
                     <motion.div
                       key={card.name + i}
-                      initial={{ opacity: 0, y: 50, rotateX: 20 }}
-                      animate={{ opacity: 1, y: 0, rotateX: 0 }}
-                      transition={{ delay: i * 0.12, type: 'spring', damping: 15 }}
+                      initial={{ opacity: 0, y: 100, rotateX: 45, scale: 0.8 }}
+                      animate={{ opacity: 1, y: 0, rotateX: 0, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.5 }}
+                      transition={{ delay: i * 0.15, type: 'spring', damping: 12, stiffness: 100 }}
                     >
                       <TarotCard card={card} isRevealed={true} />
                     </motion.div>
@@ -153,14 +158,14 @@ const App: React.FC = () => {
                 </AnimatePresence>
               </div>
 
-              {/* Action Area */}
-              <div className="w-full max-w-3xl flex flex-col items-center gap-10">
+              {/* Interaction Zone */}
+              <div className="w-full max-w-4xl flex flex-col items-center gap-10">
                 {gameState === GameState.DEALT && (
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full">
                     <input 
                       type="text"
-                      placeholder="Quelle vérité cherchez-vous ?"
-                      className="w-full bg-transparent border-b-2 border-[#c5a059]/40 text-[#fde08d] text-center text-2xl md:text-3xl p-4 focus:outline-none focus:border-[#fde08d] placeholder-[#c5a059]/30 italic transition-all drop-shadow-md"
+                      placeholder="Quelle vérité cherchez-vous dans les arcanes ?"
+                      className="w-full bg-transparent border-b-2 border-[#c5a059]/40 text-[#fde08d] text-center text-2xl md:text-3xl p-5 focus:outline-none focus:border-[#fde08d] placeholder-[#c5a059]/30 italic transition-all drop-shadow-md font-serif"
                       value={userQuestion}
                       onChange={(e) => setUserQuestion(e.target.value)}
                     />
@@ -169,18 +174,18 @@ const App: React.FC = () => {
 
                 {(reading || isLoading) && (
                   <motion.div 
-                    initial={{ opacity: 0, y: 20 }} 
+                    initial={{ opacity: 0, y: 30 }} 
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-black/70 backdrop-blur-xl p-8 rounded-xl border border-[#c5a059]/30 w-full shadow-2xl overflow-hidden"
+                    className="bg-black/75 backdrop-blur-2xl p-10 rounded-2xl border border-[#c5a059]/40 w-full shadow-[0_20px_60px_rgba(0,0,0,0.8)] overflow-hidden"
                   >
                     {isLoading ? (
-                      <div className="flex items-center justify-center gap-3 text-[#fde08d] italic text-xl animate-pulse">
-                        <span className="w-2 h-2 bg-[#fde08d] rounded-full"></span>
+                      <div className="flex items-center justify-center gap-4 text-[#fde08d] italic text-2xl animate-pulse">
+                        <span className="w-3 h-3 bg-[#fde08d] rounded-full shadow-[0_0_10px_#fde08d]"></span>
                         La cartomancienne déchiffre les fils du destin...
-                        <span className="w-2 h-2 bg-[#fde08d] rounded-full"></span>
+                        <span className="w-3 h-3 bg-[#fde08d] rounded-full shadow-[0_0_10px_#fde08d]"></span>
                       </div>
                     ) : (
-                      <div className="text-[#fde08d] text-xl leading-relaxed italic drop-shadow-lg">
+                      <div className="text-[#fde08d] text-xl md:text-2xl leading-relaxed italic drop-shadow-lg font-serif">
                         <Typewriter text={reading} speed={0.02} />
                       </div>
                     )}
@@ -200,9 +205,9 @@ const App: React.FC = () => {
                   )}
                   {(gameState === GameState.FINAL_READING || (gameState === GameState.READING && drawnCards.length === 4)) && (
                      <motion.button 
-                        whileHover={{ letterSpacing: '0.4em', color: '#fde08d' }}
+                        whileHover={{ letterSpacing: '0.5em', color: '#fde08d' }}
                         onClick={handleStartRitual} 
-                        className="text-[#c5a059] border-b border-[#c5a059]/30 text-xs tracking-[0.3em] uppercase transition-all py-1"
+                        className="text-[#c5a059] border-b border-[#c5a059]/30 text-xs tracking-[0.4em] uppercase transition-all py-2"
                      >
                         Nouveau Rituel
                      </motion.button>
@@ -212,25 +217,29 @@ const App: React.FC = () => {
             </main>
 
             {/* Footer HUD */}
-            <footer className="flex justify-between items-end text-[#c5a059] font-bold text-sm tracking-widest uppercase mt-4">
+            <footer className="flex justify-between items-end text-[#c5a059] font-bold text-sm tracking-[0.2em] uppercase mt-6">
               <AudioControl />
-              <div className="flex items-center gap-6 bg-black/30 px-6 py-2 rounded-full backdrop-blur-sm border border-white/5">
-                <span className="opacity-80">
+              <div className="flex items-center gap-8 bg-black/40 px-8 py-3 rounded-full backdrop-blur-md border border-white/10 shadow-xl">
+                <span className="opacity-90">
                   {currentDate.toLocaleString('en-US', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }).replace(',', '')} PM CET
                 </span>
                 <motion.div 
-                  animate={{ scale: [1, 1.2, 1], opacity: [0.7, 1, 0.7] }}
-                  transition={{ duration: 3, repeat: Infinity }}
-                  className="w-6 h-6 bg-[#fde08d] clip-star shadow-[0_0_20px_#fde08d]"
+                  animate={{ 
+                    scale: [1, 1.3, 1], 
+                    opacity: [0.6, 1, 0.6],
+                    rotate: [0, 90, 0]
+                  }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                  className="w-6 h-6 bg-[#fde08d] clip-star shadow-[0_0_25px_#fde08d]"
                 ></motion.div>
               </div>
             </footer>
           </div>
         </div>
 
-        {/* Laptop Bottom Lip */}
-        <div className="h-6 bg-[#151515] w-full border-t border-black/40 flex justify-center items-center">
-            <div className="w-24 h-1.5 bg-[#333] rounded-full shadow-inner"></div>
+        {/* Laptop Bottom Lip / Bezel */}
+        <div className="h-8 bg-[#181818] w-full border-t border-black/50 flex justify-center items-center shadow-inner">
+            <div className="w-32 h-2 bg-[#333] rounded-full shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]"></div>
         </div>
       </div>
     </div>
