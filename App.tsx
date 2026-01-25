@@ -29,10 +29,7 @@ export default function App() {
   const [mounted, setMounted] = useState(false);
   const [flipped, setFlipped] = useState<Record<number, boolean>>({});
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
+  useEffect(() => { setMounted(true); }, []);
   if (!mounted) return <div className="min-h-screen bg-black" />;
 
   const toggleCard = (id: number) => {
@@ -40,56 +37,60 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-[#d4af37] p-4 md:p-8 font-serif">
-      <header className="max-w-7xl mx-auto text-center mb-10">
-        <h1 className="text-3xl md:text-5xl font-bold tracking-[0.2em] uppercase mb-2">
-          Le Rituel de Grimaud
-        </h1>
-        <p className="text-[#d4af37]/60 italic">Choisissez vos lames pour le tirage</p>
+    <div className="min-h-screen bg-[#050505] text-[#d4af37] p-4 md:p-6 font-serif">
+      <header className="max-w-7xl mx-auto text-center mb-8">
+        <h1 className="text-2xl md:text-4xl font-bold tracking-[0.3em] uppercase mb-2">Le Rituel de Grimaud</h1>
+        <p className="text-[#d4af37]/50 italic text-sm">Cliquez sur une lame pour révéler son mystère</p>
       </header>
 
-      {/* Grille ajustée : plus de colonnes, cartes plus petites */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-4 max-w-[1400px] mx-auto pb-20">
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 max-w-[1200px] mx-auto pb-10">
         {ARCANES_MAJEURS.map((card) => (
           <div 
             key={card.id}
             onClick={() => toggleCard(card.id)}
-            className="relative h-[280px] md:h-[320px] cursor-pointer group"
-            style={{ perspective: '1200px' }}
+            className="relative h-[150px] md:h-[180px] cursor-pointer group"
+            style={{ perspective: '1000px' }}
           >
             <div 
-              className="relative w-full h-full transition-all duration-700"
+              className="relative w-full h-full transition-all duration-700 shadow-lg"
               style={{ 
                 transformStyle: 'preserve-3d',
                 transform: flipped[card.id] ? 'rotateY(180deg)' : 'rotateY(0deg)'
               }}
             >
               
-              {/* DOS (Plus sobre) */}
+              {/* DOS MYSTIQUE (Style Salon de Cartomancie) */}
               <div 
-                className="absolute inset-0 flex flex-col items-center justify-center bg-[#0a0a0a] rounded-xl border-2 border-[#d4af37]/50 shadow-lg"
-                style={{ backfaceVisibility: 'hidden' }}
+                className="absolute inset-0 flex flex-col items-center justify-center rounded-lg border border-[#d4af37]/40 overflow-hidden"
+                style={{ 
+                    backfaceVisibility: 'hidden',
+                    background: 'radial-gradient(circle, #1a1a1a 0%, #050505 100%)'
+                }}
               >
-                <div className="text-3xl opacity-40">👁️</div>
+                {/* Motif géométrique sacré en SVG pour la netteté */}
+                <svg width="60%" height="60%" viewBox="0 0 100 100" className="opacity-60 text-[#d4af37]">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" strokeWidth="0.5" />
+                    <circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" strokeWidth="0.5" />
+                    <path d="M50 5 L50 95 M5 50 L95 50 M18 18 L82 82 M18 82 L82 18" stroke="currentColor" strokeWidth="0.3" />
+                    <circle cx="50" cy="50" r="10" fill="none" stroke="currentColor" strokeWidth="1" />
+                    <circle cx="50" cy="50" r="2" fill="currentColor" />
+                </svg>
+                <div className="absolute inset-1 border border-[#d4af37]/10 rounded-md pointer-events-none" />
               </div>
 
-              {/* FACE (Dessin préservé mais ajusté) */}
+              {/* FACE (Dessins originaux intacts) */}
               <div 
-                className="absolute inset-0 bg-[#0d0d0d] rounded-xl p-2 flex flex-col border-2 border-[#d4af37]"
+                className="absolute inset-0 bg-[#0d0d0d] rounded-lg p-1 flex flex-col border border-[#d4af37]"
                 style={{ 
                   backfaceVisibility: 'hidden', 
                   transform: 'rotateY(180deg)' 
                 }}
               >
-                <div className="relative flex-1 w-full border border-[#d4af37]/20 rounded-lg overflow-hidden bg-black flex items-center justify-center">
-                  <img 
-                    src={card.img} 
-                    alt={card.name} 
-                    className="max-h-full max-w-full object-contain" 
-                  />
+                <div className="relative flex-1 w-full rounded overflow-hidden bg-black flex items-center justify-center">
+                  <img src={card.img} alt={card.name} className="max-h-full max-w-full object-contain" />
                 </div>
-                <div className="h-8 flex items-center justify-center">
-                  <span className="text-[10px] md:text-xs font-bold tracking-widest uppercase">{card.name}</span>
+                <div className="h-4 flex items-center justify-center mt-1">
+                  <span className="text-[8px] font-bold tracking-tighter uppercase text-[#d4af37]/80">{card.name}</span>
                 </div>
               </div>
 
