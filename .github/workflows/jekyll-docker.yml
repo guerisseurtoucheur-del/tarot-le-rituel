@@ -20,7 +20,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          # On a supprimé la ligne "cache" qui créait l'erreur
 
       - name: Install dependencies
         run: npm install
@@ -31,7 +31,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist # C'est ici que Vite range ton site fini
+          path: ./dist
 
   deploy:
     needs: build
