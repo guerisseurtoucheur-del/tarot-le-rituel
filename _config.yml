@@ -1,0 +1,21 @@
+title: Le Rituel du Tarot
+email: ton-email@exemple.com
+description: >- # Description de ton site
+  Un site sur le tarot et le rituel.
+
+# Réglages des URLs (Crucial pour GitHub Pages)
+baseurl: "/tarot-le-rituel" # Le nom de ton dépôt avec un slash devant
+url: "https://guerisseur-toucheur-del.github.io" # Ton adresse GitHub
+
+# Thème (si tu en utilises un, sinon tu peux supprimer cette ligne)
+theme: minima
+
+# Exclusions
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
