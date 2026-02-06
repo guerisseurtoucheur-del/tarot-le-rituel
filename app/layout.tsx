@@ -1,27 +1,22 @@
-import type { Metadata, Viewport } from "next";
-import { Cinzel } from "next/font/google";
+import type { Metadata } from "next";
 import "./globals.css";
-
-const cinzel = Cinzel({ subsets: ["latin"], weight: ["400", "700"] });
 
 export const metadata: Metadata = {
   title: "Le Rituel du Tarot de Grimaud",
-  description:
-    "Consultez les 22 arcanes majeurs du Tarot de Grimaud dans une experience mystique immersive.",
+  description: "Consultez les 22 arcanes majeurs du Tarot de Grimaud.",
 };
 
-export const viewport: Viewport = {
-  themeColor: "#050505",
-};
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr">
-      <body className={cinzel.className}>{children}</body>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet" />
+      </head>
+      <body style={{ fontFamily: "'Cinzel', serif", margin: 0, padding: 0, backgroundColor: "#050505", color: "#d4af37", minHeight: "100vh" }}>
+        {children}
+      </body>
     </html>
   );
 }
