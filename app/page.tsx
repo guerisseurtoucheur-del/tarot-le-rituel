@@ -9,6 +9,10 @@ interface TarotCard {
   image: string;
 }
 
+interface DrawnCard extends TarotCard {
+  reversed: boolean;
+}
+
 enum Phase {
   WELCOME = "WELCOME",
   QUESTION = "QUESTION",
@@ -77,8 +81,8 @@ export default function TarotPage() {
   const [phase, setPhase] = useState<Phase>(Phase.WELCOME);
   const [question, setQuestion] = useState("");
   const [shuffledDeck, setShuffledDeck] = useState<TarotCard[]>([]);
-  const [selectedCards, setSelectedCards] = useState<TarotCard[]>([]);
-  const [deepCards, setDeepCards] = useState<TarotCard[]>([]);
+  const [selectedCards, setSelectedCards] = useState<DrawnCard[]>([]);
+  const [deepCards, setDeepCards] = useState<DrawnCard[]>([]);
   const [flippedIds, setFlippedIds] = useState<Set<number>>(new Set());
   const [reading, setReading] = useState("");
   const [deepReading, setDeepReading] = useState("");
@@ -124,7 +128,8 @@ export default function TarotPage() {
   const selectCard = (card: TarotCard) => {
     if (selectedCards.find((c) => c.id === card.id)) return;
     if (selectedCards.length >= 4) return;
-    const next = [...selectedCards, card];
+    const drawn: DrawnCard = { ...card, reversed: Math.random() < 0.4 };
+    const next = [...selectedCards, drawn];
     setSelectedCards(next);
     setFlippedIds((s) => new Set(s).add(card.id));
     if (next.length === 4) {
@@ -148,7 +153,8 @@ export default function TarotPage() {
   const selectDeepCard = (card: TarotCard) => {
     if (deepCards.find((c) => c.id === card.id)) return;
     if (deepCards.length >= 2) return;
-    const next = [...deepCards, card];
+    const drawn: DrawnCard = { ...card, reversed: Math.random() < 0.4 };
+    const next = [...deepCards, drawn];
     setDeepCards(next);
     setFlippedIds((s) => new Set(s).add(card.id));
     if (next.length === 2) {
@@ -194,6 +200,38 @@ export default function TarotPage() {
   const gold = "#d4af37";
   const goldDim = "rgba(212,175,55,0.4)";
   const goldGlow = "rgba(212,175,55,0.15)";
+
+  /* Helper: affiche une carte revelee avec rotation si renversee */
+  const RevealedCard = ({ card, size = "normal" }: { card: DrawnCard; size?: "normal" | "small" }) => {
+    const w = size === "small" ? 80 : 100;
+    const h = size === "small" ? 130 : 160;
+    const fontSize = size === "small" ? "0.6rem" : "0.65rem";
+    return (
+      <div style={{ textAlign: "center" }}>
+        <div style={{
+          width: w, height: h, borderRadius: 8,
+          border: `2px solid ${card.reversed ? "#a04040" : gold}`, overflow: "hidden",
+          boxShadow: card.reversed
+            ? "0 0 25px rgba(160,64,64,0.3)"
+            : "0 0 25px rgba(212,175,55,0.3)",
+        }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={card.image}
+            alt={card.name}
+            style={{
+              width: "100%", height: "100%", objectFit: "cover",
+              transform: card.reversed ? "rotate(180deg)" : "none",
+            }}
+          />
+        </div>
+        <p style={{ fontSize, marginTop: 6, color: goldDim, maxWidth: w }}>{card.name}</p>
+        {card.reversed && (
+          <p style={{ fontSize: "0.55rem", marginTop: 2, color: "#a04040", fontStyle: "italic" }}>Renversee</p>
+        )}
+      </div>
+    );
+  };
 
   return (
     <>
@@ -369,17 +407,7 @@ export default function TarotPage() {
               {selectedCards.length > 0 && (
                 <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: "1.5rem", flexWrap: "wrap" }}>
                   {selectedCards.map((card) => (
-                    <div key={card.id} style={{ textAlign: "center" }}>
-                      <div style={{
-                        width: 100, height: 160, borderRadius: 8,
-                        border: `2px solid ${gold}`, overflow: "hidden",
-                        boxShadow: "0 0 25px rgba(212,175,55,0.3)",
-                      }}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={card.image} alt={card.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                      </div>
-                      <p style={{ fontSize: "0.65rem", marginTop: 6, color: goldDim, maxWidth: 100 }}>{card.name}</p>
-                    </div>
+                    <RevealedCard key={card.id} card={card} />
                   ))}
                 </div>
               )}
@@ -409,17 +437,7 @@ export default function TarotPage() {
               <p style={{ fontSize: "1.1rem", marginBottom: "1.5rem" }}>La voyante parle...</p>
               <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: "2rem", flexWrap: "wrap" }}>
                 {selectedCards.map((card) => (
-                  <div key={card.id} style={{ textAlign: "center" }}>
-                    <div style={{
-                      width: 100, height: 160, borderRadius: 8,
-                      border: `2px solid ${gold}`, overflow: "hidden",
-                      boxShadow: "0 0 25px rgba(212,175,55,0.3)",
-                    }}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={card.image} alt={card.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                    </div>
-                    <p style={{ fontSize: "0.65rem", marginTop: 6, color: goldDim, maxWidth: 100 }}>{card.name}</p>
-                  </div>
+                  <RevealedCard key={card.id} card={card} />
                 ))}
               </div>
               <div style={{
@@ -462,17 +480,7 @@ export default function TarotPage() {
               {deepCards.length > 0 && (
                 <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: "1.5rem", flexWrap: "wrap" }}>
                   {deepCards.map((card) => (
-                    <div key={card.id} style={{ textAlign: "center" }}>
-                      <div style={{
-                        width: 100, height: 160, borderRadius: 8,
-                        border: `2px solid ${gold}`, overflow: "hidden",
-                        boxShadow: "0 0 25px rgba(212,175,55,0.3)",
-                      }}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={card.image} alt={card.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                      </div>
-                      <p style={{ fontSize: "0.65rem", marginTop: 6, color: goldDim, maxWidth: 100 }}>{card.name}</p>
-                    </div>
+                    <RevealedCard key={card.id} card={card} />
                   ))}
                 </div>
               )}
@@ -502,33 +510,13 @@ export default function TarotPage() {
               <p style={{ fontSize: "1.1rem", marginBottom: "1.5rem" }}>Les arcanes revelent leur secret...</p>
               <div style={{ display: "flex", justifyContent: "center", gap: 10, marginBottom: "1rem", flexWrap: "wrap" }}>
                 {selectedCards.map((card) => (
-                  <div key={card.id} style={{ textAlign: "center" }}>
-                    <div style={{
-                      width: 80, height: 130, borderRadius: 8,
-                      border: `2px solid ${gold}`, overflow: "hidden",
-                      boxShadow: "0 0 20px rgba(212,175,55,0.25)",
-                    }}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={card.image} alt={card.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                    </div>
-                    <p style={{ fontSize: "0.6rem", marginTop: 4, color: goldDim, maxWidth: 80 }}>{card.name}</p>
-                  </div>
+                  <RevealedCard key={card.id} card={card} size="small" />
                 ))}
               </div>
               <p style={{ fontSize: "0.75rem", color: goldDim, marginBottom: "0.5rem" }}>+ Approfondissement</p>
               <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: "2rem", flexWrap: "wrap" }}>
                 {deepCards.map((card) => (
-                  <div key={card.id} style={{ textAlign: "center" }}>
-                    <div style={{
-                      width: 100, height: 160, borderRadius: 8,
-                      border: `2px solid ${gold}`, overflow: "hidden",
-                      boxShadow: "0 0 25px rgba(212,175,55,0.3)",
-                    }}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={card.image} alt={card.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                    </div>
-                    <p style={{ fontSize: "0.65rem", marginTop: 6, color: goldDim, maxWidth: 100 }}>{card.name}</p>
-                  </div>
+                  <RevealedCard key={card.id} card={card} />
                 ))}
               </div>
               <div style={{
