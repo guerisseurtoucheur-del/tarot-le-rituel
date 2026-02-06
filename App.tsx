@@ -27,6 +27,7 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 export default function App() {
+  console.log("[v0] App component rendering");
   const [gameState, setGameState] = useState<GameState>(GameState.INITIAL);
   const [question, setQuestion] = useState('');
   const [shuffledDeck, setShuffledDeck] = useState<TarotCardType[]>([]);
@@ -150,10 +151,15 @@ export default function App() {
     return shuffledDeck.slice(0, 12);
   }, [shuffledDeck, gameState]);
 
+  console.log("[v0] Current gameState:", gameState, "showIntro:", showIntro);
+
   // --- RENDER ---
 
   return (
-    <div className="min-h-screen bg-[#050505] text-[#d4af37] overflow-x-hidden relative" style={{ fontFamily: "'Cinzel', serif" }}>
+    <div
+      className="min-h-screen bg-[#050505] text-[#d4af37] overflow-x-hidden relative"
+      style={{ fontFamily: "'Cinzel', serif", minHeight: '100vh', backgroundColor: '#050505', color: '#d4af37' }}
+    >
       <MysticParticles />
       <Candle side="left" />
       <Candle side="right" />
@@ -186,6 +192,7 @@ export default function App() {
         {showIntro && (
           <motion.div
             className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#050505]"
+            style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#050505' }}
             exit={{ opacity: 0 }}
             transition={{ duration: 1.5 }}
           >
@@ -229,6 +236,7 @@ export default function App() {
           <motion.div
             key="initial"
             className="min-h-screen flex flex-col items-center justify-center px-4 relative z-10"
+            style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 1rem', position: 'relative', zIndex: 10 }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, y: -30 }}
