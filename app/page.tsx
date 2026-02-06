@@ -20,29 +20,30 @@ enum Phase {
 }
 
 /* ---- DECK ---- */
+const CARD_BACK = "/cards/back.jpg";
 const DECK: TarotCard[] = [
-  { id: 0, name: "Le Mat", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Jean_Dodal_Tarot_trump_22.jpg/130px-Jean_Dodal_Tarot_trump_22.jpg" },
-  { id: 1, name: "Le Bateleur", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/eb/Jean_Dodal_Tarot_trump_01.jpg/130px-Jean_Dodal_Tarot_trump_01.jpg" },
-  { id: 2, name: "La Papesse", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Jean_Dodal_Tarot_trump_02.jpg/130px-Jean_Dodal_Tarot_trump_02.jpg" },
-  { id: 3, name: "L Imperatrice", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Jean_Dodal_Tarot_trump_03.jpg/130px-Jean_Dodal_Tarot_trump_03.jpg" },
-  { id: 4, name: "L Empereur", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Jean_Dodal_Tarot_trump_04.jpg/130px-Jean_Dodal_Tarot_trump_04.jpg" },
-  { id: 5, name: "Le Pape", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Jean_Dodal_Tarot_trump_05.jpg/130px-Jean_Dodal_Tarot_trump_05.jpg" },
-  { id: 6, name: "L Amoureux", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Jean_Dodal_Tarot_trump_06.jpg/130px-Jean_Dodal_Tarot_trump_06.jpg" },
-  { id: 7, name: "Le Chariot", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Jean_Dodal_Tarot_trump_07.jpg/130px-Jean_Dodal_Tarot_trump_07.jpg" },
-  { id: 8, name: "La Justice", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Jean_Dodal_Tarot_trump_08.jpg/130px-Jean_Dodal_Tarot_trump_08.jpg" },
-  { id: 9, name: "L Hermite", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Jean_Dodal_Tarot_trump_09.jpg/130px-Jean_Dodal_Tarot_trump_09.jpg" },
-  { id: 10, name: "La Roue de Fortune", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Jean_Dodal_Tarot_trump_10.jpg/130px-Jean_Dodal_Tarot_trump_10.jpg" },
-  { id: 11, name: "La Force", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Jean_Dodal_Tarot_trump_11.jpg/130px-Jean_Dodal_Tarot_trump_11.jpg" },
-  { id: 12, name: "Le Pendu", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Jean_Dodal_Tarot_trump_12.jpg/130px-Jean_Dodal_Tarot_trump_12.jpg" },
-  { id: 13, name: "L Arcane sans Nom", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Jean_Dodal_Tarot_trump_13.jpg/130px-Jean_Dodal_Tarot_trump_13.jpg" },
-  { id: 14, name: "Temperance", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Jean_Dodal_Tarot_trump_14.jpg/130px-Jean_Dodal_Tarot_trump_14.jpg" },
-  { id: 15, name: "Le Diable", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Jean_Dodal_Tarot_trump_15.jpg/130px-Jean_Dodal_Tarot_trump_15.jpg" },
-  { id: 16, name: "La Maison Dieu", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Jean_Dodal_Tarot_trump_16.jpg/130px-Jean_Dodal_Tarot_trump_16.jpg" },
-  { id: 17, name: "L Etoile", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Jean_Dodal_Tarot_trump_17.jpg/130px-Jean_Dodal_Tarot_trump_17.jpg" },
-  { id: 18, name: "La Lune", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Jean_Dodal_Tarot_trump_18.jpg/130px-Jean_Dodal_Tarot_trump_18.jpg" },
-  { id: 19, name: "Le Soleil", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Jean_Dodal_Tarot_trump_19.jpg/130px-Jean_Dodal_Tarot_trump_19.jpg" },
-  { id: 20, name: "Le Jugement", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Jean_Dodal_Tarot_trump_20.jpg/130px-Jean_Dodal_Tarot_trump_20.jpg" },
-  { id: 21, name: "Le Monde", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Jean_Dodal_Tarot_trump_21.jpg/130px-Jean_Dodal_Tarot_trump_21.jpg" },
+  { id: 0, name: "Le Mat", image: "/cards/00-mat.jpg" },
+  { id: 1, name: "Le Bateleur", image: "/cards/01-bateleur.jpg" },
+  { id: 2, name: "La Papesse", image: "/cards/02-papesse.jpg" },
+  { id: 3, name: "L'Imperatrice", image: "/cards/03-imperatrice.jpg" },
+  { id: 4, name: "L'Empereur", image: "/cards/04-empereur.jpg" },
+  { id: 5, name: "Le Pape", image: "/cards/05-pape.jpg" },
+  { id: 6, name: "L'Amoureux", image: "/cards/06-amoureux.jpg" },
+  { id: 7, name: "Le Chariot", image: "/cards/07-chariot.jpg" },
+  { id: 8, name: "La Justice", image: "/cards/08-justice.jpg" },
+  { id: 9, name: "L'Hermite", image: "/cards/09-hermite.jpg" },
+  { id: 10, name: "La Roue de Fortune", image: "/cards/10-roue.jpg" },
+  { id: 11, name: "La Force", image: "/cards/11-force.jpg" },
+  { id: 12, name: "Le Pendu", image: "/cards/12-pendu.jpg" },
+  { id: 13, name: "L'Arcane sans Nom", image: "/cards/13-mort.jpg" },
+  { id: 14, name: "Temperance", image: "/cards/14-temperance.jpg" },
+  { id: 15, name: "Le Diable", image: "/cards/15-diable.jpg" },
+  { id: 16, name: "La Maison Dieu", image: "/cards/16-maison.jpg" },
+  { id: 17, name: "L'Etoile", image: "/cards/17-etoile.jpg" },
+  { id: 18, name: "La Lune", image: "/cards/18-lune.jpg" },
+  { id: 19, name: "Le Soleil", image: "/cards/19-soleil.jpg" },
+  { id: 20, name: "Le Jugement", image: "/cards/20-jugement.jpg" },
+  { id: 21, name: "Le Monde", image: "/cards/21-monde.jpg" },
 ];
 
 /* ---- READINGS ---- */
@@ -86,7 +87,6 @@ export default function TarotPage() {
   const typingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    console.log("[v0] TarotPage mounted");
     setMounted(true);
   }, []);
 
@@ -342,14 +342,13 @@ export default function TarotPage() {
                 {[0, 1, 2, 3, 4].map((i) => (
                   <div key={i} style={{
                     width: 60, height: 90,
-                    background: "linear-gradient(145deg, #1a1205, #0a0800)",
                     border: `1px solid ${goldDim}`, borderRadius: 8,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: "1.2rem", color: goldDim,
+                    overflow: "hidden",
                     animation: `cardBob ${0.4 + i * 0.15}s ease-in-out infinite`,
                     boxShadow: `0 0 15px ${goldGlow}`,
                   }}>
-                    {"?"}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={CARD_BACK} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   </div>
                 ))}
               </div>
@@ -390,13 +389,13 @@ export default function TarotPage() {
                   return (
                     <div key={card.id} className="cback" style={{
                       width: 100, height: 160,
-                      background: "linear-gradient(145deg, #1a1205, #0a0800)",
                       border: `1px solid ${goldDim}`, borderRadius: 8,
-                      cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: "1.5rem", color: goldDim, transition: "all 0.3s",
+                      cursor: "pointer", overflow: "hidden",
+                      transition: "all 0.3s",
                       boxShadow: `0 0 15px ${goldGlow}`,
                     }} onClick={() => selectCard(card)}>
-                      {"?"}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={CARD_BACK} alt="Carte cachee" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     </div>
                   );
                 })}
@@ -483,13 +482,13 @@ export default function TarotPage() {
                   return (
                     <div key={card.id} className="cback" style={{
                       width: 100, height: 160,
-                      background: "linear-gradient(145deg, #1a1205, #0a0800)",
                       border: `1px solid ${goldDim}`, borderRadius: 8,
-                      cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: "1.5rem", color: goldDim, transition: "all 0.3s",
+                      cursor: "pointer", overflow: "hidden",
+                      transition: "all 0.3s",
                       boxShadow: `0 0 15px ${goldGlow}`,
                     }} onClick={() => selectDeepCard(card)}>
-                      {"?"}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={CARD_BACK} alt="Carte cachee" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     </div>
                   );
                 })}
