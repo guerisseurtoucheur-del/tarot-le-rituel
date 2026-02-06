@@ -1,31 +1,44 @@
-
 import React, { useState, useEffect } from 'react';
-import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 interface TypewriterProps {
   text: string;
   speed?: number;
 }
 
-const Typewriter: React.FC<TypewriterProps> = ({ text, speed = 0.05 }) => {
+const Typewriter: React.FC<TypewriterProps> = ({ text, speed = 0.03 }) => {
   const [displayText, setDisplayText] = useState('');
-  
+  const [isDone, setIsDone] = useState(false);
+
   useEffect(() => {
     let i = 0;
     setDisplayText('');
+    setIsDone(false);
     const interval = setInterval(() => {
-      if(i < text.length) {
-        setDisplayText(prev => prev + text.charAt(i));
+      if (i < text.length) {
+        setDisplayText(text.slice(0, i + 1));
         i++;
       } else {
+        setIsDone(true);
         clearInterval(interval);
       }
     }, speed * 1000);
-    
+
     return () => clearInterval(interval);
   }, [text, speed]);
 
-  return <p>{displayText}<span className="inline-block w-2 h-5 bg-amber-200 animate-pulse ml-1"></span></p>;
+  return (
+    <span>
+      {displayText}
+      {!isDone && (
+        <motion.span
+          className="inline-block w-[2px] h-4 bg-[#d4af37] ml-0.5 align-text-bottom"
+          animate={{ opacity: [1, 0, 1] }}
+          transition={{ duration: 0.8, repeat: Infinity }}
+        />
+      )}
+    </span>
+  );
 };
 
 export default Typewriter;
