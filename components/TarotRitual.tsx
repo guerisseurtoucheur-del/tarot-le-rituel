@@ -54,6 +54,7 @@ function pickRandom(arr: string[]) {
 }
 
 export default function TarotRitual() {
+  console.log("[v0] TarotRitual component rendering");
   const [gameState, setGameState] = useState(GameState.INITIAL);
   const [question, setQuestion] = useState("");
   const [shuffledDeck, setShuffledDeck] = useState<TarotCardType[]>([]);
