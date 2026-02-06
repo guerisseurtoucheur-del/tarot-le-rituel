@@ -19,13 +19,13 @@ importers:
         version: 19.2.4(react@19.2.4)
     devDependencies:
       '@types/node':
-        specifier: 25.2.1
+        specifier: ^25.2.1
         version: 25.2.1
       '@types/react':
-        specifier: 19.2.13
+        specifier: ^19.2.13
         version: 19.2.13
       typescript:
-        specifier: 5.9.3
+        specifier: ^5.9.3
         version: 5.9.3
 
 packages:
