@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 
 export default function Typewriter({ text, speed = 0.03 }: { text: string; speed?: number }) {
   const [displayText, setDisplayText] = useState("");
