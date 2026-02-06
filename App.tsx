@@ -17,6 +17,10 @@ const FORTUNE_TELLER_PHRASES = [
   "Le voile entre les mondes s'amincit... posez votre question.",
 ];
 
+const GOLD = '#d4af37';
+const BG = '#050505';
+const BG_CARD = '#0a0505';
+
 function shuffleArray<T>(array: T[]): T[] {
   const shuffled = [...array];
   for (let i = shuffled.length - 1; i > 0; i--) {
@@ -27,7 +31,6 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 export default function App() {
-  console.log("[v0] App component rendering");
   const [gameState, setGameState] = useState<GameState>(GameState.INITIAL);
   const [question, setQuestion] = useState('');
   const [shuffledDeck, setShuffledDeck] = useState<TarotCardType[]>([]);
@@ -58,13 +61,11 @@ export default function App() {
     }
   }, [isPlaying]);
 
-  // Intro sequence
   useEffect(() => {
     const timer = setTimeout(() => setShowIntro(false), 3500);
     return () => clearTimeout(timer);
   }, []);
 
-  // Fortune phrase rotation
   useEffect(() => {
     if (gameState === GameState.INITIAL && !showIntro) {
       setFortunePhrase(FORTUNE_TELLER_PHRASES[Math.floor(Math.random() * FORTUNE_TELLER_PHRASES.length)]);
@@ -151,15 +152,329 @@ export default function App() {
     return shuffledDeck.slice(0, 12);
   }, [shuffledDeck, gameState]);
 
-  console.log("[v0] Current gameState:", gameState, "showIntro:", showIntro);
-
-  // --- RENDER ---
+  // --- Styles ---
+  const s = {
+    root: {
+      fontFamily: "'Cinzel', serif",
+      minHeight: '100vh',
+      backgroundColor: BG,
+      color: GOLD,
+      overflowX: 'hidden' as const,
+      position: 'relative' as const,
+    },
+    audioBtn: {
+      position: 'fixed' as const,
+      top: 16,
+      right: 16,
+      zIndex: 50,
+      padding: 12,
+      borderRadius: '50%',
+      border: `1px solid ${GOLD}33`,
+      backgroundColor: `${BG_CARD}cc`,
+      backdropFilter: 'blur(4px)',
+      cursor: 'pointer',
+    },
+    fullOverlay: {
+      position: 'fixed' as const,
+      inset: 0,
+      zIndex: 50,
+      display: 'flex',
+      flexDirection: 'column' as const,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: BG,
+    },
+    centerCol: {
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column' as const,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '0 1rem',
+      position: 'relative' as const,
+      zIndex: 10,
+    },
+    topCol: {
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column' as const,
+      alignItems: 'center',
+      paddingTop: 32,
+      paddingBottom: 64,
+      paddingLeft: 16,
+      paddingRight: 16,
+      position: 'relative' as const,
+      zIndex: 10,
+    },
+    title: {
+      fontSize: 'clamp(1.1rem, 4vw, 2.2rem)',
+      letterSpacing: '0.2em',
+      textTransform: 'uppercase' as const,
+      marginTop: 32,
+      marginBottom: 8,
+      textAlign: 'center' as const,
+      textWrap: 'balance' as const,
+    },
+    subtitle: {
+      fontSize: 'clamp(0.9rem, 3vw, 1.5rem)',
+      letterSpacing: '0.15em',
+      textTransform: 'uppercase' as const,
+      marginBottom: 8,
+      textAlign: 'center' as const,
+    },
+    divider: {
+      width: 96,
+      height: 1,
+      background: `linear-gradient(to right, transparent, ${GOLD}, transparent)`,
+      marginBottom: 24,
+    },
+    phrase: {
+      color: `${GOLD}80`,
+      fontSize: 'clamp(0.7rem, 2vw, 0.9rem)',
+      fontStyle: 'italic',
+      textAlign: 'center' as const,
+      maxWidth: 420,
+      marginBottom: 40,
+      lineHeight: 1.6,
+    },
+    label: {
+      display: 'block',
+      fontSize: '0.7rem',
+      letterSpacing: '0.3em',
+      textTransform: 'uppercase' as const,
+      color: `${GOLD}99`,
+      marginBottom: 12,
+      textAlign: 'center' as const,
+    },
+    input: {
+      width: '100%',
+      maxWidth: 480,
+      backgroundColor: `${BG_CARD}cc`,
+      border: `1px solid ${GOLD}33`,
+      borderRadius: 8,
+      padding: '14px 20px',
+      color: GOLD,
+      fontSize: 'clamp(0.8rem, 2vw, 1rem)',
+      fontFamily: "'Cinzel', serif",
+      outline: 'none',
+    },
+    btn: {
+      marginTop: 24,
+      padding: '12px 40px',
+      backgroundColor: 'transparent',
+      border: `1px solid ${GOLD}66`,
+      borderRadius: 8,
+      color: GOLD,
+      fontSize: '0.8rem',
+      letterSpacing: '0.2em',
+      textTransform: 'uppercase' as const,
+      cursor: 'pointer',
+      fontFamily: "'Cinzel', serif",
+    },
+    btnDisabled: {
+      opacity: 0.2,
+      cursor: 'not-allowed',
+    },
+    cardGrid: {
+      display: 'flex',
+      flexWrap: 'wrap' as const,
+      justifyContent: 'center',
+      gap: 12,
+      maxWidth: 900,
+      paddingBottom: 32,
+    },
+    dotRow: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: 8,
+      marginBottom: 24,
+    },
+    dot: (active: boolean) => ({
+      width: 12,
+      height: 12,
+      borderRadius: '50%',
+      border: `1px solid ${active ? GOLD : GOLD + '4d'}`,
+      backgroundColor: active ? GOLD : 'transparent',
+      transition: 'all 0.3s',
+      boxShadow: active ? `0 0 8px ${GOLD}` : 'none',
+    }),
+    readingBox: {
+      maxWidth: 640,
+      width: '100%',
+      backgroundColor: `${BG_CARD}99`,
+      border: `1px solid ${GOLD}26`,
+      borderRadius: 12,
+      padding: 'clamp(16px, 4vw, 32px)',
+      boxShadow: `0 0 40px ${GOLD}0d, inset 0 0 30px rgba(0,0,0,0.3)`,
+    },
+    readingHeader: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: 12,
+      marginBottom: 16,
+    },
+    readingLine: {
+      height: 1,
+      background: `linear-gradient(to right, transparent, ${GOLD}66)`,
+    },
+    readingLabel: {
+      fontSize: '0.6rem',
+      letterSpacing: '0.3em',
+      textTransform: 'uppercase' as const,
+      color: `${GOLD}80`,
+      whiteSpace: 'nowrap' as const,
+    },
+    readingText: {
+      color: `${GOLD}cc`,
+      fontSize: 'clamp(0.8rem, 2.5vw, 1rem)',
+      lineHeight: 1.7,
+      fontStyle: 'italic',
+    },
+    loadingOverlay: {
+      position: 'fixed' as const,
+      inset: 0,
+      zIndex: 40,
+      display: 'flex',
+      flexDirection: 'column' as const,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: `${BG}e6`,
+    },
+    spinner: {
+      width: 64,
+      height: 64,
+      borderRadius: '50%',
+      border: `2px solid ${GOLD}33`,
+      borderTopColor: GOLD,
+    },
+    loadingText: {
+      marginTop: 24,
+      fontSize: '0.85rem',
+      letterSpacing: '0.2em',
+      color: `${GOLD}80`,
+    },
+    cardRevealRow: {
+      display: 'flex',
+      flexWrap: 'wrap' as const,
+      justifyContent: 'center',
+      gap: 16,
+      marginBottom: 32,
+    },
+    revealCard: {
+      display: 'flex',
+      flexDirection: 'column' as const,
+      alignItems: 'center',
+    },
+    revealImg: (big: boolean) => ({
+      width: big ? 'clamp(90px, 15vw, 130px)' : 'clamp(70px, 12vw, 100px)',
+      height: big ? 'clamp(155px, 25vw, 220px)' : 'clamp(120px, 20vw, 170px)',
+      borderRadius: 8,
+      overflow: 'hidden' as const,
+      border: `2px solid ${big ? GOLD + 'b3' : GOLD + '4d'}`,
+      position: 'relative' as const,
+      boxShadow: big
+        ? `0 0 25px ${GOLD}33, 0 8px 32px rgba(0,0,0,0.4)`
+        : `0 4px 16px rgba(0,0,0,0.3)`,
+    }),
+    imgFill: {
+      width: '100%',
+      height: '100%',
+      objectFit: 'cover' as const,
+    },
+    cardOverlay: {
+      position: 'absolute' as const,
+      bottom: 0,
+      left: 0,
+      right: 0,
+      background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
+      padding: '16px 4px 4px',
+    },
+    cardName: {
+      fontSize: 'clamp(7px, 1.5vw, 10px)',
+      fontWeight: 'bold' as const,
+      letterSpacing: '0.1em',
+      color: GOLD,
+      textTransform: 'uppercase' as const,
+      textAlign: 'center' as const,
+    },
+    positionLabel: (dim: boolean) => ({
+      marginTop: 4,
+      fontSize: '0.5rem',
+      letterSpacing: '0.15em',
+      color: dim ? `${GOLD}4d` : `${GOLD}80`,
+      textTransform: 'uppercase' as const,
+    }),
+    symbolRow: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: 16,
+      marginTop: 64,
+      color: `${GOLD}26`,
+      fontSize: '1.2rem',
+    },
+    symbolLine: {
+      width: 48,
+      height: 1,
+      backgroundColor: `${GOLD}1a`,
+    },
+    btnRow: {
+      display: 'flex',
+      flexWrap: 'wrap' as const,
+      justifyContent: 'center',
+      gap: 16,
+      marginTop: 32,
+    },
+    btnSecondary: {
+      padding: '12px 32px',
+      backgroundColor: 'transparent',
+      border: `1px solid ${GOLD}33`,
+      borderRadius: 8,
+      color: `${GOLD}80`,
+      fontSize: '0.75rem',
+      letterSpacing: '0.15em',
+      textTransform: 'uppercase' as const,
+      cursor: 'pointer',
+      fontFamily: "'Cinzel', serif",
+    },
+    miniCard: {
+      width: 'clamp(50px, 10vw, 70px)',
+      height: 'clamp(85px, 16vw, 115px)',
+      borderRadius: 4,
+      border: `1px solid ${GOLD}4d`,
+      overflow: 'hidden' as const,
+      position: 'relative' as const,
+      opacity: 0.7,
+    },
+    collapsedReading: {
+      maxWidth: 640,
+      width: '100%',
+      backgroundColor: `${BG_CARD}66`,
+      border: `1px solid ${GOLD}1a`,
+      borderRadius: 8,
+      padding: 16,
+      marginBottom: 16,
+    },
+    collapsedLabel: {
+      fontSize: '0.6rem',
+      letterSpacing: '0.2em',
+      textTransform: 'uppercase' as const,
+      color: `${GOLD}4d`,
+      marginBottom: 8,
+    },
+    collapsedText: {
+      color: `${GOLD}66`,
+      fontSize: '0.75rem',
+      lineHeight: 1.5,
+      fontStyle: 'italic',
+      display: '-webkit-box',
+      WebkitLineClamp: 3,
+      WebkitBoxOrient: 'vertical' as const,
+      overflow: 'hidden',
+    },
+  };
 
   return (
-    <div
-      className="min-h-screen bg-[#050505] text-[#d4af37] overflow-x-hidden relative"
-      style={{ fontFamily: "'Cinzel', serif", minHeight: '100vh', backgroundColor: '#050505', color: '#d4af37' }}
-    >
+    <div style={s.root}>
       <MysticParticles />
       <Candle side="left" />
       <Candle side="right" />
@@ -168,18 +483,19 @@ export default function App() {
       {/* Audio toggle */}
       <motion.button
         onClick={toggleAudio}
-        className="fixed top-4 right-4 z-50 p-3 rounded-full border border-[#d4af37]/20 bg-[#0a0a0a]/80 backdrop-blur-sm"
-        whileHover={{ scale: 1.1, borderColor: 'rgba(212,175,55,0.5)' }}
+        style={s.audioBtn}
+        whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
+        aria-label={isPlaying ? 'Couper le son' : 'Activer le son'}
       >
         {isPlaying ? (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4af37" strokeWidth="2">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={GOLD} strokeWidth="2">
             <path d="M11 5L6 9H2v6h4l5 4V5z" />
             <path d="M15.54 8.46a5 5 0 010 7.07" />
             <path d="M19.07 4.93a10 10 0 010 14.14" />
           </svg>
         ) : (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4af37" strokeWidth="2">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={GOLD} strokeWidth="2">
             <path d="M11 5L6 9H2v6h4l5 4V5z" />
             <line x1="23" y1="9" x2="17" y2="15" />
             <line x1="17" y1="9" x2="23" y2="15" />
@@ -191,8 +507,7 @@ export default function App() {
       <AnimatePresence>
         {showIntro && (
           <motion.div
-            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#050505]"
-            style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#050505' }}
+            style={s.fullOverlay}
             exit={{ opacity: 0 }}
             transition={{ duration: 1.5 }}
           >
@@ -204,7 +519,7 @@ export default function App() {
               <CrystalBall />
             </motion.div>
             <motion.h1
-              className="text-2xl md:text-4xl tracking-[0.3em] uppercase mt-8 text-center px-4"
+              style={s.title}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8, duration: 1 }}
@@ -212,13 +527,13 @@ export default function App() {
               Le Rituel du Tarot
             </motion.h1>
             <motion.div
-              className="w-20 h-[1px] bg-gradient-to-r from-transparent via-[#d4af37] to-transparent mt-4"
+              style={s.divider}
               initial={{ scaleX: 0 }}
               animate={{ scaleX: 1 }}
               transition={{ delay: 1.5, duration: 1 }}
             />
             <motion.p
-              className="text-[#d4af37]/40 text-xs tracking-[0.2em] mt-3 italic"
+              style={{ color: `${GOLD}66`, fontSize: '0.7rem', letterSpacing: '0.2em', fontStyle: 'italic' }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 2, duration: 1 }}
@@ -235,8 +550,7 @@ export default function App() {
         {gameState === GameState.INITIAL && !showIntro && (
           <motion.div
             key="initial"
-            className="min-h-screen flex flex-col items-center justify-center px-4 relative z-10"
-            style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 1rem', position: 'relative', zIndex: 10 }}
+            style={s.centerCol}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, y: -30 }}
@@ -245,7 +559,7 @@ export default function App() {
             <CrystalBall />
 
             <motion.h1
-              className="text-xl sm:text-2xl md:text-4xl tracking-[0.2em] uppercase mt-8 mb-2 text-center text-balance"
+              style={s.title}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
@@ -254,14 +568,14 @@ export default function App() {
             </motion.h1>
 
             <motion.div
-              className="w-24 h-[1px] bg-gradient-to-r from-transparent via-[#d4af37] to-transparent mb-6"
+              style={s.divider}
               initial={{ scaleX: 0 }}
               animate={{ scaleX: 1 }}
               transition={{ delay: 0.6, duration: 0.8 }}
             />
 
             <motion.p
-              className="text-[#d4af37]/50 text-xs sm:text-sm italic text-center max-w-md mb-10 leading-relaxed"
+              style={s.phrase}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.8 }}
@@ -270,60 +584,55 @@ export default function App() {
             </motion.p>
 
             <motion.div
-              className="w-full max-w-lg"
+              style={{ width: '100%', maxWidth: 480 }}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1 }}
             >
-              <label className="block text-xs tracking-[0.3em] uppercase text-[#d4af37]/60 mb-3 text-center">
+              <label style={s.label}>
                 Quelle est votre question ?
               </label>
-              <div className="relative">
+              <div style={{ position: 'relative' }}>
                 <input
                   type="text"
                   value={question}
                   onChange={(e) => setQuestion(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleStartRitual()}
                   placeholder="Posez votre question au destin..."
-                  className="w-full bg-[#0a0505]/80 border border-[#d4af37]/20 rounded-lg px-5 py-4 text-[#d4af37] placeholder-[#d4af37]/20 text-sm md:text-base focus:outline-none focus:border-[#d4af37]/50 transition-colors"
-                  style={{ fontFamily: "'Cinzel', serif" }}
-                />
-                <motion.div
-                  className="absolute inset-0 rounded-lg pointer-events-none"
-                  style={{
-                    background: 'radial-gradient(ellipse at center, rgba(212,175,55,0.03) 0%, transparent 70%)',
-                  }}
-                  animate={{ opacity: [0, 1, 0] }}
-                  transition={{ duration: 3, repeat: Infinity }}
+                  style={s.input}
                 />
               </div>
 
-              <motion.button
-                onClick={handleStartRitual}
-                disabled={!question.trim()}
-                className="mt-6 mx-auto block px-10 py-3 bg-transparent border border-[#d4af37]/40 rounded-lg text-[#d4af37] text-sm tracking-[0.2em] uppercase transition-all disabled:opacity-20 disabled:cursor-not-allowed"
-                whileHover={question.trim() ? {
-                  scale: 1.05,
-                  borderColor: 'rgba(212,175,55,0.8)',
-                  boxShadow: '0 0 20px rgba(212,175,55,0.15)',
-                } : {}}
-                whileTap={question.trim() ? { scale: 0.95 } : {}}
-              >
-                Commencer le Rituel
-              </motion.button>
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <motion.button
+                  onClick={handleStartRitual}
+                  disabled={!question.trim()}
+                  style={{
+                    ...s.btn,
+                    ...(question.trim() ? {} : s.btnDisabled),
+                  }}
+                  whileHover={question.trim() ? {
+                    scale: 1.05,
+                    borderColor: `${GOLD}cc`,
+                    boxShadow: `0 0 20px ${GOLD}26`,
+                  } : {}}
+                  whileTap={question.trim() ? { scale: 0.95 } : {}}
+                >
+                  Commencer le Rituel
+                </motion.button>
+              </div>
             </motion.div>
 
-            {/* Decorative bottom symbols */}
             <motion.div
-              className="flex items-center gap-4 mt-16 text-[#d4af37]/15 text-xl"
+              style={s.symbolRow}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1.5 }}
             >
               <span>&#9789;</span>
-              <span className="w-12 h-[1px] bg-[#d4af37]/10" />
+              <span style={s.symbolLine} />
               <span>&#9788;</span>
-              <span className="w-12 h-[1px] bg-[#d4af37]/10" />
+              <span style={s.symbolLine} />
               <span>&#9790;</span>
             </motion.div>
           </motion.div>
@@ -333,17 +642,20 @@ export default function App() {
         {isShuffling && (
           <motion.div
             key="shuffling"
-            className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-[#050505]/95"
+            style={{ ...s.loadingOverlay, zIndex: 40 }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <div className="relative w-32 h-48">
+            <div style={{ position: 'relative', width: 128, height: 192 }}>
               {[0, 1, 2, 3, 4].map((i) => (
                 <motion.div
                   key={i}
-                  className="absolute inset-0 rounded-lg border border-[#d4af37]/30"
                   style={{
+                    position: 'absolute',
+                    inset: 0,
+                    borderRadius: 8,
+                    border: `1px solid ${GOLD}4d`,
                     background: 'linear-gradient(145deg, #1a0a0a, #0d0505)',
                   }}
                   animate={{
@@ -361,7 +673,7 @@ export default function App() {
               ))}
             </div>
             <motion.p
-              className="mt-8 text-sm tracking-[0.3em] uppercase text-[#d4af37]/60"
+              style={s.loadingText}
               animate={{ opacity: [0.3, 1, 0.3] }}
               transition={{ duration: 1.5, repeat: Infinity }}
             >
@@ -374,21 +686,21 @@ export default function App() {
         {gameState === GameState.DEALT && (
           <motion.div
             key="dealt"
-            className="min-h-screen flex flex-col items-center pt-8 px-4 relative z-10"
+            style={s.topCol}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.6 }}
           >
             <motion.h2
-              className="text-lg sm:text-xl md:text-2xl tracking-[0.15em] uppercase mb-2 text-center"
+              style={s.subtitle}
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
             >
               Choisissez 4 Arcanes
             </motion.h2>
             <motion.p
-              className="text-[#d4af37]/40 text-xs sm:text-sm italic mb-2"
+              style={{ ...s.phrase, marginBottom: 8 }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
@@ -396,28 +708,24 @@ export default function App() {
               Laissez votre intuition vous guider...
             </motion.p>
 
-            {/* Selected count */}
-            <motion.div className="flex items-center gap-2 mb-6">
+            {/* Progress dots */}
+            <div style={s.dotRow}>
               {[0, 1, 2, 3].map((i) => (
                 <motion.div
                   key={i}
-                  className={`w-3 h-3 rounded-full border ${
-                    i < selectedCards.length
-                      ? 'bg-[#d4af37] border-[#d4af37]'
-                      : 'border-[#d4af37]/30'
-                  }`}
+                  style={s.dot(i < selectedCards.length)}
                   animate={
                     i < selectedCards.length
-                      ? { scale: [1, 1.4, 1], boxShadow: ['0 0 0px #d4af37', '0 0 12px #d4af37', '0 0 4px #d4af37'] }
+                      ? { scale: [1, 1.4, 1] }
                       : {}
                   }
                   transition={{ duration: 0.5 }}
                 />
               ))}
-            </motion.div>
+            </div>
 
             {/* Card spread */}
-            <div className="flex flex-wrap justify-center gap-3 md:gap-4 max-w-4xl pb-8">
+            <div style={s.cardGrid}>
               {visibleDeck.map((card, index) => {
                 const isSelected = !!selectedCards.find((c) => c.name === card.name);
                 return (
@@ -434,22 +742,22 @@ export default function App() {
               })}
             </div>
 
-            {/* Loading state */}
+            {/* Loading overlay */}
             <AnimatePresence>
               {isLoading && (
                 <motion.div
-                  className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-[#050505]/90"
+                  style={s.loadingOverlay}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                 >
                   <motion.div
-                    className="w-16 h-16 border-2 border-[#d4af37]/20 border-t-[#d4af37] rounded-full"
+                    style={s.spinner}
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
                   />
                   <motion.p
-                    className="mt-6 text-sm tracking-[0.2em] text-[#d4af37]/50"
+                    style={s.loadingText}
                     animate={{ opacity: [0.3, 1, 0.3] }}
                     transition={{ duration: 2, repeat: Infinity }}
                   >
@@ -465,13 +773,13 @@ export default function App() {
         {gameState === GameState.READING && (
           <motion.div
             key="reading"
-            className="min-h-screen flex flex-col items-center pt-8 pb-16 px-4 relative z-10"
+            style={s.topCol}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
             <motion.h2
-              className="text-lg sm:text-xl md:text-2xl tracking-[0.15em] uppercase mb-6 text-center"
+              style={s.subtitle}
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
             >
@@ -479,94 +787,69 @@ export default function App() {
             </motion.h2>
 
             {/* Selected cards display */}
-            <div className="flex flex-wrap justify-center gap-4 md:gap-6 mb-8">
+            <div style={s.cardRevealRow}>
               {selectedCards.map((card, i) => (
                 <motion.div
                   key={card.name}
-                  className="flex flex-col items-center"
+                  style={s.revealCard}
                   initial={{ opacity: 0, y: 30, rotateY: -90 }}
                   animate={{ opacity: 1, y: 0, rotateY: 0 }}
                   transition={{ delay: i * 0.2, duration: 0.8, type: 'spring' }}
                 >
-                  <div
-                    className="w-[90px] h-[155px] sm:w-[110px] sm:h-[185px] md:w-[130px] md:h-[220px] rounded-lg overflow-hidden border-2 border-[#d4af37]/50 relative"
-                    style={{
-                      boxShadow: '0 0 20px rgba(212,175,55,0.15), 0 8px 32px rgba(0,0,0,0.4)',
-                    }}
-                  >
-                    <img
-                      src={card.imageUrl}
-                      alt={card.name}
-                      className="w-full h-full object-cover"
-                      crossOrigin="anonymous"
-                    />
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-1.5 pt-4">
-                      <p className="text-[8px] sm:text-[10px] font-bold tracking-wider text-[#d4af37] uppercase text-center">
-                        {card.name}
-                      </p>
+                  <div style={s.revealImg(true)}>
+                    <img src={card.imageUrl} alt={card.name} style={s.imgFill} crossOrigin="anonymous" />
+                    <div style={s.cardOverlay}>
+                      <p style={s.cardName}>{card.name}</p>
                     </div>
                   </div>
-                  <motion.div
-                    className="mt-2 text-[9px] tracking-[0.15em] text-[#d4af37]/40 uppercase"
+                  <motion.span
+                    style={s.positionLabel(false)}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: i * 0.2 + 0.5 }}
                   >
                     {['Passe', 'Present', 'Obstacle', 'Avenir'][i]}
-                  </motion.div>
+                  </motion.span>
                 </motion.div>
               ))}
             </div>
 
             {/* Reading text */}
             <motion.div
-              className="max-w-2xl w-full bg-[#0a0505]/60 border border-[#d4af37]/15 rounded-xl p-6 md:p-8 backdrop-blur-sm"
+              style={s.readingBox}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1 }}
-              style={{
-                boxShadow: '0 0 40px rgba(212,175,55,0.05), inset 0 0 30px rgba(0,0,0,0.3)',
-              }}
             >
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-[1px] bg-gradient-to-r from-transparent to-[#d4af37]/40" />
-                <span className="text-[10px] tracking-[0.3em] uppercase text-[#d4af37]/50">
-                  La Cartomancienne parle
-                </span>
-                <div className="flex-1 h-[1px] bg-gradient-to-r from-[#d4af37]/40 to-transparent" />
+              <div style={s.readingHeader}>
+                <div style={{ ...s.readingLine, width: 32 }} />
+                <span style={s.readingLabel}>La Cartomancienne parle</span>
+                <div style={{ ...s.readingLine, flex: 1 }} />
               </div>
-              <div className="text-[#d4af37]/80 text-sm md:text-base leading-relaxed italic">
+              <div style={s.readingText}>
                 <Typewriter text={reading} speed={0.025} />
               </div>
             </motion.div>
 
-            {/* Action buttons */}
+            {/* Buttons */}
             <motion.div
-              className="flex flex-col sm:flex-row gap-4 mt-8"
+              style={s.btnRow}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 2 }}
             >
               <motion.button
                 onClick={handleDeepen}
-                className="px-8 py-3 border border-[#d4af37]/40 rounded-lg text-[#d4af37] text-xs sm:text-sm tracking-[0.15em] uppercase"
-                whileHover={{
-                  scale: 1.05,
-                  borderColor: 'rgba(212,175,55,0.8)',
-                  boxShadow: '0 0 20px rgba(212,175,55,0.15)',
-                }}
+                style={s.btn}
+                whileHover={{ scale: 1.05, borderColor: `${GOLD}cc`, boxShadow: `0 0 20px ${GOLD}26` }}
                 whileTap={{ scale: 0.95 }}
               >
                 Approfondir le Tirage
               </motion.button>
               <motion.button
                 onClick={handleNewReading}
-                className="px-8 py-3 border border-[#d4af37]/20 rounded-lg text-[#d4af37]/50 text-xs sm:text-sm tracking-[0.15em] uppercase"
-                whileHover={{
-                  scale: 1.05,
-                  color: 'rgba(212,175,55,1)',
-                  borderColor: 'rgba(212,175,55,0.5)',
-                }}
+                style={s.btnSecondary}
+                whileHover={{ scale: 1.05, color: GOLD, borderColor: `${GOLD}80` }}
                 whileTap={{ scale: 0.95 }}
               >
                 Nouveau Tirage
@@ -579,20 +862,20 @@ export default function App() {
         {gameState === GameState.DEEPENING && (
           <motion.div
             key="deepening"
-            className="min-h-screen flex flex-col items-center pt-8 pb-16 px-4 relative z-10"
+            style={s.topCol}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
             <motion.h2
-              className="text-lg sm:text-xl md:text-2xl tracking-[0.15em] uppercase mb-2 text-center"
+              style={s.subtitle}
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
             >
               Approfondissement
             </motion.h2>
             <motion.p
-              className="text-[#d4af37]/40 text-xs sm:text-sm italic mb-8 text-center"
+              style={{ ...s.phrase, marginBottom: 32 }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
@@ -603,29 +886,29 @@ export default function App() {
             </motion.p>
 
             {/* Original 4 cards (small) */}
-            <div className="flex flex-wrap justify-center gap-3 mb-6">
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 12, marginBottom: 24 }}>
               {selectedCards.map((card, i) => (
                 <motion.div
                   key={card.name}
-                  className="w-[60px] h-[100px] sm:w-[70px] sm:h-[115px] rounded border border-[#d4af37]/30 overflow-hidden relative opacity-70"
+                  style={s.miniCard}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 0.7 }}
                   transition={{ delay: i * 0.1 }}
                 >
-                  <img src={card.imageUrl} alt={card.name} className="w-full h-full object-cover" crossOrigin="anonymous" />
+                  <img src={card.imageUrl} alt={card.name} style={s.imgFill} crossOrigin="anonymous" />
                 </motion.div>
               ))}
             </div>
 
             <motion.div
-              className="w-16 h-[1px] bg-gradient-to-r from-transparent via-[#d4af37]/30 to-transparent mb-6"
+              style={{ ...s.divider, width: 64, marginBottom: 24 }}
               initial={{ scaleX: 0 }}
               animate={{ scaleX: 1 }}
               transition={{ delay: 0.5 }}
             />
 
             {/* Deep cards */}
-            <div className="flex gap-6 md:gap-10 mb-8">
+            <div style={{ display: 'flex', gap: 24, marginBottom: 32 }}>
               {deepCards.map((card, index) => (
                 <RitualCard
                   key={card.name}
@@ -643,18 +926,18 @@ export default function App() {
             <AnimatePresence>
               {isLoading && (
                 <motion.div
-                  className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-[#050505]/90"
+                  style={s.loadingOverlay}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                 >
                   <motion.div
-                    className="w-16 h-16 border-2 border-[#d4af37]/20 border-t-[#d4af37] rounded-full"
+                    style={s.spinner}
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
                   />
                   <motion.p
-                    className="mt-6 text-sm tracking-[0.2em] text-[#d4af37]/50"
+                    style={s.loadingText}
                     animate={{ opacity: [0.3, 1, 0.3] }}
                     transition={{ duration: 2, repeat: Infinity }}
                   >
@@ -670,12 +953,12 @@ export default function App() {
         {gameState === GameState.FINAL_READING && (
           <motion.div
             key="final"
-            className="min-h-screen flex flex-col items-center pt-8 pb-16 px-4 relative z-10"
+            style={s.topCol}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
             <motion.h2
-              className="text-lg sm:text-xl md:text-2xl tracking-[0.15em] uppercase mb-6 text-center"
+              style={s.subtitle}
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
             >
@@ -683,108 +966,80 @@ export default function App() {
             </motion.h2>
 
             {/* All 6 cards */}
-            <div className="flex flex-wrap justify-center gap-3 md:gap-4 mb-8">
+            <div style={s.cardRevealRow}>
               {[...selectedCards, ...deepCards].map((card, i) => (
                 <motion.div
                   key={card.name}
-                  className="flex flex-col items-center"
+                  style={s.revealCard}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.15 }}
                 >
-                  <div
-                    className={`rounded-lg overflow-hidden border-2 relative ${
-                      i >= 4
-                        ? 'border-[#d4af37]/70 w-[90px] h-[155px] sm:w-[110px] sm:h-[185px] md:w-[130px] md:h-[220px]'
-                        : 'border-[#d4af37]/30 w-[70px] h-[120px] sm:w-[85px] sm:h-[145px] md:w-[100px] md:h-[170px]'
-                    }`}
-                    style={{
-                      boxShadow: i >= 4
-                        ? '0 0 25px rgba(212,175,55,0.2), 0 8px 32px rgba(0,0,0,0.4)'
-                        : '0 4px 16px rgba(0,0,0,0.3)',
-                    }}
-                  >
-                    <img src={card.imageUrl} alt={card.name} className="w-full h-full object-cover" crossOrigin="anonymous" />
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-1 pt-3">
-                      <p className="text-[7px] sm:text-[8px] font-bold tracking-wider text-[#d4af37] uppercase text-center">
-                        {card.name}
-                      </p>
+                  <div style={s.revealImg(i >= 4)}>
+                    <img src={card.imageUrl} alt={card.name} style={s.imgFill} crossOrigin="anonymous" />
+                    <div style={s.cardOverlay}>
+                      <p style={s.cardName}>{card.name}</p>
                     </div>
                   </div>
-                  {i < 4 && (
-                    <span className="mt-1 text-[8px] tracking-wider text-[#d4af37]/30 uppercase">
-                      {['Passe', 'Present', 'Obstacle', 'Avenir'][i]}
-                    </span>
-                  )}
-                  {i >= 4 && (
-                    <span className="mt-1 text-[8px] tracking-wider text-[#d4af37]/50 uppercase">
-                      {['Eclairage', 'Conseil'][i - 4]}
-                    </span>
-                  )}
+                  {i < 4 && <span style={s.positionLabel(true)}>{['Passe', 'Present', 'Obstacle', 'Avenir'][i]}</span>}
+                  {i >= 4 && <span style={s.positionLabel(false)}>{['Eclairage', 'Conseil'][i - 4]}</span>}
                 </motion.div>
               ))}
             </div>
 
-            {/* Previous reading (collapsed) */}
+            {/* Previous reading */}
             <motion.div
-              className="max-w-2xl w-full bg-[#0a0505]/40 border border-[#d4af37]/10 rounded-lg p-4 mb-4"
+              style={s.collapsedReading}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
             >
-              <p className="text-[10px] tracking-[0.2em] uppercase text-[#d4af37]/30 mb-2">Premiere Lecture</p>
-              <p className="text-[#d4af37]/40 text-xs leading-relaxed italic line-clamp-3">{reading}</p>
+              <p style={s.collapsedLabel}>Premiere Lecture</p>
+              <p style={s.collapsedText}>{reading}</p>
             </motion.div>
 
             {/* Deep reading */}
             <motion.div
-              className="max-w-2xl w-full bg-[#0a0505]/60 border border-[#d4af37]/15 rounded-xl p-6 md:p-8 backdrop-blur-sm"
+              style={s.readingBox}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1 }}
-              style={{
-                boxShadow: '0 0 40px rgba(212,175,55,0.05), inset 0 0 30px rgba(0,0,0,0.3)',
-              }}
             >
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-[1px] bg-gradient-to-r from-transparent to-[#d4af37]/40" />
-                <span className="text-[10px] tracking-[0.3em] uppercase text-[#d4af37]/50">
-                  Revelation Finale
-                </span>
-                <div className="flex-1 h-[1px] bg-gradient-to-r from-[#d4af37]/40 to-transparent" />
+              <div style={s.readingHeader}>
+                <div style={{ ...s.readingLine, width: 32 }} />
+                <span style={s.readingLabel}>Revelation Finale</span>
+                <div style={{ ...s.readingLine, flex: 1 }} />
               </div>
-              <div className="text-[#d4af37]/80 text-sm md:text-base leading-relaxed italic">
+              <div style={s.readingText}>
                 <Typewriter text={deepReading} speed={0.025} />
               </div>
             </motion.div>
 
             {/* New reading button */}
-            <motion.button
-              onClick={handleNewReading}
-              className="mt-8 px-10 py-3 border border-[#d4af37]/40 rounded-lg text-[#d4af37] text-xs sm:text-sm tracking-[0.2em] uppercase"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 2 }}
-              whileHover={{
-                scale: 1.05,
-                borderColor: 'rgba(212,175,55,0.8)',
-                boxShadow: '0 0 20px rgba(212,175,55,0.15)',
-              }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Nouveau Rituel
-            </motion.button>
+            <motion.div style={{ display: 'flex', justifyContent: 'center' }}>
+              <motion.button
+                onClick={handleNewReading}
+                style={{ ...s.btn, marginTop: 32 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 2 }}
+                whileHover={{ scale: 1.05, borderColor: `${GOLD}cc`, boxShadow: `0 0 20px ${GOLD}26` }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Nouveau Rituel
+              </motion.button>
+            </motion.div>
 
             {/* Footer ornament */}
             <motion.div
-              className="flex items-center gap-3 mt-10 text-[#d4af37]/10"
+              style={s.symbolRow}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 2.5 }}
             >
-              <span className="w-16 h-[1px] bg-[#d4af37]/10" />
-              <span className="text-lg">&#9788;</span>
-              <span className="w-16 h-[1px] bg-[#d4af37]/10" />
+              <span style={s.symbolLine} />
+              <span>&#9788;</span>
+              <span style={s.symbolLine} />
             </motion.div>
           </motion.div>
         )}

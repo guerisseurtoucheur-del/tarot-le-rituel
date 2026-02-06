@@ -1,6 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
+const GOLD = '#d4af37';
+
 interface RitualCardProps {
   card: { name: string; imageUrl: string };
   index: number;
@@ -8,7 +10,6 @@ interface RitualCardProps {
   isSelectable: boolean;
   isSelected: boolean;
   onClick: () => void;
-  layoutId?: string;
 }
 
 const RitualCard: React.FC<RitualCardProps> = ({
@@ -18,15 +19,10 @@ const RitualCard: React.FC<RitualCardProps> = ({
   isSelectable,
   isSelected,
   onClick,
-  layoutId,
 }) => {
   return (
     <motion.div
-      layoutId={layoutId}
-      className={`relative cursor-pointer select-none ${
-        isSelectable ? 'hover:z-10' : ''
-      }`}
-      style={{ perspective: 1200 }}
+      style={{ position: 'relative', cursor: isSelectable ? 'pointer' : 'default', perspective: 1200, userSelect: 'none' }}
       onClick={isSelectable ? onClick : undefined}
       initial={{ opacity: 0, y: 40, rotateZ: (index - 3) * 3 }}
       animate={{
@@ -39,30 +35,37 @@ const RitualCard: React.FC<RitualCardProps> = ({
       whileHover={isSelectable ? { y: -16, scale: 1.08, transition: { type: 'spring', stiffness: 300 } } : {}}
     >
       <motion.div
-        className="relative w-[100px] h-[170px] sm:w-[120px] sm:h-[200px] md:w-[140px] md:h-[235px]"
-        style={{ transformStyle: 'preserve-3d' }}
+        style={{
+          position: 'relative',
+          width: 'clamp(100px, 14vw, 140px)',
+          height: 'clamp(170px, 24vw, 235px)',
+          transformStyle: 'preserve-3d',
+        }}
         animate={{ rotateY: isRevealed ? 180 : 0 }}
         transition={{ duration: 1, ease: [0.25, 0.1, 0.25, 1] }}
       >
         {/* Card Back */}
         <div
-          className="absolute inset-0 rounded-lg overflow-hidden border-2"
           style={{
-            backfaceVisibility: 'hidden',
-            borderColor: isSelected ? 'rgba(212,175,55,0.8)' : 'rgba(212,175,55,0.25)',
+            position: 'absolute',
+            inset: 0,
+            borderRadius: 8,
+            overflow: 'hidden',
+            border: `2px solid ${isSelected ? GOLD + 'cc' : GOLD + '40'}`,
             background: 'linear-gradient(145deg, #1a0a0a 0%, #0d0505 50%, #1a0a0a 100%)',
+            backfaceVisibility: 'hidden',
             boxShadow: isSelected
-              ? '0 0 25px rgba(212,175,55,0.3), 0 8px 32px rgba(0,0,0,0.5)'
+              ? `0 0 25px ${GOLD}4d, 0 8px 32px rgba(0,0,0,0.5)`
               : '0 4px 16px rgba(0,0,0,0.4)',
           }}
         >
-          <div className="absolute inset-0 flex items-center justify-center">
-            <svg width="70%" height="70%" viewBox="0 0 100 100" className="opacity-40">
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="70%" height="70%" viewBox="0 0 100 100" style={{ opacity: 0.4 }}>
               <defs>
                 <linearGradient id={`grad-${index}`} x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#d4af37" stopOpacity="0.6" />
-                  <stop offset="50%" stopColor="#b8860b" stopOpacity="0.3" />
-                  <stop offset="100%" stopColor="#d4af37" stopOpacity="0.6" />
+                  <stop offset="0%" stopColor={GOLD} stopOpacity={0.6} />
+                  <stop offset="50%" stopColor="#b8860b" stopOpacity={0.3} />
+                  <stop offset="100%" stopColor={GOLD} stopOpacity={0.6} />
                 </linearGradient>
               </defs>
               <circle cx="50" cy="50" r="45" fill="none" stroke={`url(#grad-${index})`} strokeWidth="0.5" />
@@ -78,42 +81,63 @@ const RitualCard: React.FC<RitualCardProps> = ({
                 stroke={`url(#grad-${index})`}
                 strokeWidth="0.4"
               />
-              <circle cx="50" cy="50" r="5" fill="none" stroke="#d4af37" strokeWidth="0.8" />
-              <circle cx="50" cy="50" r="1.5" fill="#d4af37" opacity="0.6" />
+              <circle cx="50" cy="50" r="5" fill="none" stroke={GOLD} strokeWidth="0.8" />
+              <circle cx="50" cy="50" r="1.5" fill={GOLD} opacity={0.6} />
             </svg>
           </div>
-          <div className="absolute inset-2 border border-[#d4af37]/10 rounded pointer-events-none" />
+          <div style={{ position: 'absolute', inset: 8, border: `1px solid ${GOLD}1a`, borderRadius: 4, pointerEvents: 'none' }} />
           {isSelectable && (
             <motion.div
-              className="absolute inset-0 rounded-lg"
+              style={{
+                position: 'absolute',
+                inset: 0,
+                borderRadius: 8,
+                background: `radial-gradient(ellipse at center, ${GOLD}33 0%, transparent 70%)`,
+              }}
               animate={{ opacity: [0, 0.15, 0] }}
               transition={{ duration: 2, repeat: Infinity, delay: index * 0.3 }}
-              style={{
-                background: 'radial-gradient(ellipse at center, rgba(212,175,55,0.2) 0%, transparent 70%)',
-              }}
             />
           )}
         </div>
 
         {/* Card Front */}
         <div
-          className="absolute inset-0 rounded-lg overflow-hidden border-2 border-[#d4af37]/60"
           style={{
+            position: 'absolute',
+            inset: 0,
+            borderRadius: 8,
+            overflow: 'hidden',
+            border: `2px solid ${GOLD}99`,
             backfaceVisibility: 'hidden',
             transform: 'rotateY(180deg)',
-            boxShadow: '0 0 30px rgba(212,175,55,0.2), 0 8px 32px rgba(0,0,0,0.5)',
+            boxShadow: `0 0 30px ${GOLD}33, 0 8px 32px rgba(0,0,0,0.5)`,
           }}
         >
-          <div className="absolute inset-0 bg-[#f5f0e1]">
+          <div style={{ position: 'absolute', inset: 0, backgroundColor: '#f5f0e1' }}>
             <img
               src={card.imageUrl}
               alt={card.name}
-              className="w-full h-full object-cover"
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               crossOrigin="anonymous"
             />
           </div>
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-2 pt-6">
-            <p className="text-center text-[10px] sm:text-xs font-bold tracking-wider text-[#d4af37] uppercase">
+          <div style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.5) 50%, transparent 100%)',
+            padding: '24px 8px 8px',
+          }}>
+            <p style={{
+              textAlign: 'center',
+              fontSize: 'clamp(9px, 1.5vw, 12px)',
+              fontWeight: 'bold',
+              letterSpacing: '0.1em',
+              color: GOLD,
+              textTransform: 'uppercase',
+              margin: 0,
+            }}>
               {card.name}
             </p>
           </div>

@@ -32,7 +32,14 @@ const Typewriter: React.FC<TypewriterProps> = ({ text, speed = 0.03 }) => {
       {displayText}
       {!isDone && (
         <motion.span
-          className="inline-block w-[2px] h-4 bg-[#d4af37] ml-0.5 align-text-bottom"
+          style={{
+            display: 'inline-block',
+            width: 2,
+            height: 16,
+            backgroundColor: '#d4af37',
+            marginLeft: 2,
+            verticalAlign: 'text-bottom',
+          }}
           animate={{ opacity: [1, 0, 1] }}
           transition={{ duration: 0.8, repeat: Infinity }}
         />

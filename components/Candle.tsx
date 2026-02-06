@@ -8,12 +8,24 @@ interface CandleProps {
 const Candle: React.FC<CandleProps> = ({ side }) => {
   return (
     <div
-      className={`fixed bottom-0 ${side === 'left' ? 'left-4 md:left-8' : 'right-4 md:right-8'} z-10 pointer-events-none hidden md:block`}
+      style={{
+        position: 'fixed',
+        bottom: 0,
+        [side === 'left' ? 'left' : 'right']: 24,
+        zIndex: 10,
+        pointerEvents: 'none',
+      }}
     >
       {/* Glow */}
       <motion.div
-        className="absolute -top-24 left-1/2 -translate-x-1/2 w-40 h-40 rounded-full"
         style={{
+          position: 'absolute',
+          top: -96,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: 160,
+          height: 160,
+          borderRadius: '50%',
           background: 'radial-gradient(circle, rgba(255,170,50,0.15) 0%, rgba(255,120,20,0.05) 40%, transparent 70%)',
         }}
         animate={{
@@ -24,9 +36,9 @@ const Candle: React.FC<CandleProps> = ({ side }) => {
       />
 
       {/* Flame */}
-      <div className="relative flex flex-col items-center">
+      <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <motion.div
-          className="relative w-3 h-8 mb-0"
+          style={{ position: 'relative', width: 12, height: 32, marginBottom: 0 }}
           animate={{
             scaleY: [1, 1.2, 0.9, 1.1, 1],
             scaleX: [1, 0.9, 1.1, 0.95, 1],
@@ -35,16 +47,19 @@ const Candle: React.FC<CandleProps> = ({ side }) => {
           transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
         >
           <div
-            className="absolute inset-0 rounded-full"
             style={{
-              background: 'linear-gradient(to top, #ff6600 0%, #ff9900 40%, #ffcc00 70%, #ffffff 100%)',
+              position: 'absolute',
+              inset: 0,
               borderRadius: '50% 50% 50% 50% / 60% 60% 40% 40%',
+              background: 'linear-gradient(to top, #ff6600 0%, #ff9900 40%, #ffcc00 70%, #ffffff 100%)',
               filter: 'blur(1px)',
             }}
           />
           <motion.div
-            className="absolute -inset-2 rounded-full"
             style={{
+              position: 'absolute',
+              inset: -8,
+              borderRadius: '50%',
               background: 'radial-gradient(circle, rgba(255,150,50,0.4) 0%, transparent 70%)',
             }}
             animate={{ opacity: [0.5, 0.8, 0.4, 0.7, 0.5] }}
@@ -53,12 +68,14 @@ const Candle: React.FC<CandleProps> = ({ side }) => {
         </motion.div>
 
         {/* Wick */}
-        <div className="w-[2px] h-2 bg-[#333]" />
+        <div style={{ width: 2, height: 8, backgroundColor: '#333' }} />
 
         {/* Candle body */}
         <div
-          className="w-6 h-24 rounded-b-sm"
           style={{
+            width: 24,
+            height: 96,
+            borderRadius: '0 0 2px 2px',
             background: 'linear-gradient(to right, #8B0000 0%, #a01010 30%, #c01515 50%, #a01010 70%, #8B0000 100%)',
           }}
         />

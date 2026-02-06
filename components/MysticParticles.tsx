@@ -25,16 +25,17 @@ const MysticParticles: React.FC = () => {
   }, []);
 
   return (
-    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+    <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 0 }}>
       {particles.map((p) => (
         <motion.div
           key={p.id}
-          className="absolute rounded-full"
           style={{
+            position: 'absolute',
             left: `${p.x}%`,
             top: `${p.y}%`,
             width: p.size,
             height: p.size,
+            borderRadius: '50%',
             background: `radial-gradient(circle, rgba(212,175,55,${p.opacity}) 0%, transparent 70%)`,
             boxShadow: `0 0 ${p.size * 3}px rgba(212,175,55,${p.opacity * 0.5})`,
           }}
