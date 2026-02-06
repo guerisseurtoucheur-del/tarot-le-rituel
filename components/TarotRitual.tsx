@@ -1,15 +1,23 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import MysticParticles from './components/MysticParticles';
-import RitualCard from './components/RitualCard';
-import CrystalBall from './components/CrystalBall';
-import Candle from './components/Candle';
-import Typewriter from './components/Typewriter';
-import { TAROT_DECK } from './constants/tarotDeck';
-import { getReading } from './services/geminiService';
-import { TarotCardType, GameState } from './types';
+"use client";
 
-const FORTUNE_TELLER_PHRASES = [
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import MysticParticles from "./MysticParticles";
+import RitualCard from "./RitualCard";
+import CrystalBall from "./CrystalBall";
+import Candle from "./Candle";
+import Typewriter from "./Typewriter";
+import { TAROT_DECK, type TarotCardType } from "@/lib/tarot-deck";
+
+enum GameState {
+  INITIAL = "initial",
+  DEALT = "dealt",
+  READING = "reading",
+  DEEPENING = "deepening",
+  FINAL_READING = "final_reading",
+}
+
+const FORTUNE_PHRASES = [
   "Les arcanes murmurent... je sens une presence forte.",
   "Les etoiles s'alignent pour votre lecture ce soir...",
   "Concentrez-vous... l'univers a un message pour vous.",
@@ -17,38 +25,53 @@ const FORTUNE_TELLER_PHRASES = [
   "Le voile entre les mondes s'amincit... posez votre question.",
 ];
 
-const GOLD = '#d4af37';
-const BG = '#050505';
-const BG_CARD = '#0a0505';
+const FALLBACK_READINGS = [
+  "Les arcanes tissent un recit fascinant pour vous. Le chemin que vous empruntez est jalonne de transformations profondes. Les forces du passe vous poussent vers un renouveau inattendu. Faites confiance a votre intuition, car elle est votre meilleur guide dans cette periode de changement. L'univers conspire en votre faveur, meme si le voile du mystere ne se leve que lentement.",
+  "Les cartes parlent d'un voyage interieur qui s'annonce revelateur. Des energies puissantes se croisent dans votre destinee, creant des opportunites la ou vous ne voyez que des obstacles. Votre passe recele la cle de votre avenir. Les astres veillent sur votre chemin et vous guident vers une comprehension plus profonde de vous-meme.",
+  "Je vois dans ce tirage une danse entre ombre et lumiere. Votre question touche a l'essence meme de votre transformation personnelle. Les arcanes revelent que vous etes a un carrefour decisif. Le courage de faire face a vos verites cachees vous menera vers une liberation attendue depuis longtemps.",
+];
 
-function shuffleArray<T>(array: T[]): T[] {
-  const shuffled = [...array];
-  for (let i = shuffled.length - 1; i > 0; i--) {
+const FALLBACK_DEEP = [
+  "Les deux arcanes supplementaires eclairent d'une lumiere nouvelle votre lecture. Ce qui semblait obscur trouve maintenant sa signification. La voie se dessine plus clairement devant vous. Les forces cosmiques confirment que votre instinct premier etait le bon. Avancez avec confiance.",
+  "Ces nouvelles cartes approfondissent considerablement la vision precedente. Elles revelent des couches cachees de votre destinee que les premiers arcanes ne faisaient qu'effleurer. Un message clair emerge : le moment d'agir approche.",
+];
+
+const GOLD = "#d4af37";
+const BG = "#050505";
+const BG_CARD = "#0a0505";
+
+function shuffleArray<T>(arr: T[]): T[] {
+  const s = [...arr];
+  for (let i = s.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    [s[i], s[j]] = [s[j], s[i]];
   }
-  return shuffled;
+  return s;
 }
 
-export default function App() {
-  const [gameState, setGameState] = useState<GameState>(GameState.INITIAL);
-  const [question, setQuestion] = useState('');
+function pickRandom(arr: string[]) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+export default function TarotRitual() {
+  const [gameState, setGameState] = useState(GameState.INITIAL);
+  const [question, setQuestion] = useState("");
   const [shuffledDeck, setShuffledDeck] = useState<TarotCardType[]>([]);
   const [selectedCards, setSelectedCards] = useState<TarotCardType[]>([]);
   const [revealedCards, setRevealedCards] = useState<Set<number>>(new Set());
-  const [reading, setReading] = useState('');
-  const [deepReading, setDeepReading] = useState('');
+  const [reading, setReading] = useState("");
+  const [deepReading, setDeepReading] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [fortunePhrase, setFortunePhrase] = useState('');
+  const [fortunePhrase, setFortunePhrase] = useState("");
   const [isShuffling, setIsShuffling] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
   const [deepCards, setDeepCards] = useState<TarotCardType[]>([]);
   const [deepRevealed, setDeepRevealed] = useState<Set<number>>(new Set());
-
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const musicUrl = 'https://cdn.pixabay.com/download/audio/2022/11/21/audio_a21a5c68c3.mp3';
+  const musicUrl =
+    "https://cdn.pixabay.com/download/audio/2022/11/21/audio_a21a5c68c3.mp3";
 
   const toggleAudio = useCallback(() => {
     if (audioRef.current) {
@@ -62,13 +85,13 @@ export default function App() {
   }, [isPlaying]);
 
   useEffect(() => {
-    const timer = setTimeout(() => setShowIntro(false), 3500);
-    return () => clearTimeout(timer);
+    const t = setTimeout(() => setShowIntro(false), 3500);
+    return () => clearTimeout(t);
   }, []);
 
   useEffect(() => {
     if (gameState === GameState.INITIAL && !showIntro) {
-      setFortunePhrase(FORTUNE_TELLER_PHRASES[Math.floor(Math.random() * FORTUNE_TELLER_PHRASES.length)]);
+      setFortunePhrase(pickRandom(FORTUNE_PHRASES));
     }
   }, [gameState, showIntro]);
 
@@ -83,68 +106,61 @@ export default function App() {
     }, 2000);
   }, [question]);
 
-  const handleSelectCard = useCallback((card: TarotCardType, index: number) => {
-    if (selectedCards.length >= 4) return;
-    if (selectedCards.find((c) => c.name === card.name)) return;
-
-    const newSelected = [...selectedCards, card];
-    setSelectedCards(newSelected);
-    setRevealedCards((prev) => new Set(prev).add(index));
-
-    if (newSelected.length === 4) {
-      setIsLoading(true);
-      getReading(newSelected, question)
-        .then((text) => {
-          setReading(text);
+  const handleSelectCard = useCallback(
+    (card: TarotCardType, index: number) => {
+      if (selectedCards.length >= 4) return;
+      if (selectedCards.find((c) => c.name === card.name)) return;
+      const newSel = [...selectedCards, card];
+      setSelectedCards(newSel);
+      setRevealedCards((prev) => new Set(prev).add(index));
+      if (newSel.length === 4) {
+        setIsLoading(true);
+        // Simulate reading delay
+        setTimeout(() => {
+          setReading(pickRandom(FALLBACK_READINGS));
           setGameState(GameState.READING);
-        })
-        .catch(() => {
-          setReading("Les esprits sont troubles... Reessayez dans un instant.");
-          setGameState(GameState.READING);
-        })
-        .finally(() => setIsLoading(false));
-    }
-  }, [selectedCards, question]);
+          setIsLoading(false);
+        }, 2000);
+      }
+    },
+    [selectedCards]
+  );
 
   const handleDeepen = useCallback(() => {
-    const remainingDeck = shuffledDeck.filter(
+    const remaining = shuffledDeck.filter(
       (c) => !selectedCards.find((s) => s.name === c.name)
     );
-    const extraCards = shuffleArray(remainingDeck).slice(0, 2);
-    setDeepCards(extraCards);
+    const extra = shuffleArray(remaining).slice(0, 2);
+    setDeepCards(extra);
     setGameState(GameState.DEEPENING);
   }, [shuffledDeck, selectedCards]);
 
-  const handleSelectDeepCard = useCallback((card: TarotCardType, index: number) => {
-    setDeepRevealed((prev) => new Set(prev).add(index));
-
-    if (deepRevealed.size + 1 === 2) {
-      setIsLoading(true);
-      const allCards = [...selectedCards, ...deepCards];
-      getReading(allCards, question, reading)
-        .then((text) => {
-          setDeepReading(text);
+  const handleSelectDeepCard = useCallback(
+    (card: TarotCardType, index: number) => {
+      setDeepRevealed((prev) => new Set(prev).add(index));
+      if (deepRevealed.size + 1 === 2) {
+        setIsLoading(true);
+        setTimeout(() => {
+          setDeepReading(pickRandom(FALLBACK_DEEP));
           setGameState(GameState.FINAL_READING);
-        })
-        .catch(() => {
-          setDeepReading("Le voile se referme... mais les cartes ont parle.");
-          setGameState(GameState.FINAL_READING);
-        })
-        .finally(() => setIsLoading(false));
-    }
-  }, [deepRevealed, selectedCards, deepCards, question, reading]);
+          setIsLoading(false);
+        }, 2000);
+      }
+    },
+    [deepRevealed]
+  );
 
   const handleNewReading = useCallback(() => {
     setGameState(GameState.INITIAL);
-    setQuestion('');
+    setQuestion("");
     setShuffledDeck([]);
     setSelectedCards([]);
     setRevealedCards(new Set());
-    setReading('');
-    setDeepReading('');
+    setReading("");
+    setDeepReading("");
     setDeepCards([]);
     setDeepRevealed(new Set());
-    setFortunePhrase(FORTUNE_TELLER_PHRASES[Math.floor(Math.random() * FORTUNE_TELLER_PHRASES.length)]);
+    setFortunePhrase(pickRandom(FORTUNE_PHRASES));
   }, []);
 
   const visibleDeck = useMemo(() => {
@@ -152,75 +168,73 @@ export default function App() {
     return shuffledDeck.slice(0, 12);
   }, [shuffledDeck, gameState]);
 
-  // --- Styles ---
+  /* ---------- styles ---------- */
   const s = {
     root: {
       fontFamily: "'Cinzel', serif",
-      minHeight: '100vh',
+      minHeight: "100vh",
       backgroundColor: BG,
       color: GOLD,
-      overflowX: 'hidden' as const,
-      position: 'relative' as const,
+      overflowX: "hidden" as const,
+      position: "relative" as const,
     },
     audioBtn: {
-      position: 'fixed' as const,
+      position: "fixed" as const,
       top: 16,
       right: 16,
       zIndex: 50,
       padding: 12,
-      borderRadius: '50%',
+      borderRadius: "50%",
       border: `1px solid ${GOLD}33`,
       backgroundColor: `${BG_CARD}cc`,
-      backdropFilter: 'blur(4px)',
-      cursor: 'pointer',
+      cursor: "pointer",
     },
     fullOverlay: {
-      position: 'fixed' as const,
+      position: "fixed" as const,
       inset: 0,
       zIndex: 50,
-      display: 'flex',
-      flexDirection: 'column' as const,
-      alignItems: 'center',
-      justifyContent: 'center',
+      display: "flex",
+      flexDirection: "column" as const,
+      alignItems: "center",
+      justifyContent: "center",
       backgroundColor: BG,
     },
     centerCol: {
-      minHeight: '100vh',
-      display: 'flex',
-      flexDirection: 'column' as const,
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '0 1rem',
-      position: 'relative' as const,
+      minHeight: "100vh",
+      display: "flex",
+      flexDirection: "column" as const,
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "0 1rem",
+      position: "relative" as const,
       zIndex: 10,
     },
     topCol: {
-      minHeight: '100vh',
-      display: 'flex',
-      flexDirection: 'column' as const,
-      alignItems: 'center',
+      minHeight: "100vh",
+      display: "flex",
+      flexDirection: "column" as const,
+      alignItems: "center",
       paddingTop: 32,
       paddingBottom: 64,
       paddingLeft: 16,
       paddingRight: 16,
-      position: 'relative' as const,
+      position: "relative" as const,
       zIndex: 10,
     },
     title: {
-      fontSize: 'clamp(1.1rem, 4vw, 2.2rem)',
-      letterSpacing: '0.2em',
-      textTransform: 'uppercase' as const,
+      fontSize: "clamp(1.1rem, 4vw, 2.2rem)",
+      letterSpacing: "0.2em",
+      textTransform: "uppercase" as const,
       marginTop: 32,
       marginBottom: 8,
-      textAlign: 'center' as const,
-      textWrap: 'balance' as const,
+      textAlign: "center" as const,
     },
     subtitle: {
-      fontSize: 'clamp(0.9rem, 3vw, 1.5rem)',
-      letterSpacing: '0.15em',
-      textTransform: 'uppercase' as const,
+      fontSize: "clamp(0.9rem, 3vw, 1.5rem)",
+      letterSpacing: "0.15em",
+      textTransform: "uppercase" as const,
       marginBottom: 8,
-      textAlign: 'center' as const,
+      textAlign: "center" as const,
     },
     divider: {
       width: 96,
@@ -230,86 +244,78 @@ export default function App() {
     },
     phrase: {
       color: `${GOLD}80`,
-      fontSize: 'clamp(0.7rem, 2vw, 0.9rem)',
-      fontStyle: 'italic',
-      textAlign: 'center' as const,
+      fontSize: "clamp(0.7rem, 2vw, 0.9rem)",
+      fontStyle: "italic" as const,
+      textAlign: "center" as const,
       maxWidth: 420,
       marginBottom: 40,
       lineHeight: 1.6,
     },
     label: {
-      display: 'block',
-      fontSize: '0.7rem',
-      letterSpacing: '0.3em',
-      textTransform: 'uppercase' as const,
+      display: "block",
+      fontSize: "0.7rem",
+      letterSpacing: "0.3em",
+      textTransform: "uppercase" as const,
       color: `${GOLD}99`,
       marginBottom: 12,
-      textAlign: 'center' as const,
+      textAlign: "center" as const,
     },
     input: {
-      width: '100%',
+      width: "100%",
       maxWidth: 480,
       backgroundColor: `${BG_CARD}cc`,
       border: `1px solid ${GOLD}33`,
       borderRadius: 8,
-      padding: '14px 20px',
+      padding: "14px 20px",
       color: GOLD,
-      fontSize: 'clamp(0.8rem, 2vw, 1rem)',
+      fontSize: "clamp(0.8rem, 2vw, 1rem)",
       fontFamily: "'Cinzel', serif",
-      outline: 'none',
+      outline: "none",
     },
     btn: {
       marginTop: 24,
-      padding: '12px 40px',
-      backgroundColor: 'transparent',
+      padding: "12px 40px",
+      backgroundColor: "transparent",
       border: `1px solid ${GOLD}66`,
       borderRadius: 8,
       color: GOLD,
-      fontSize: '0.8rem',
-      letterSpacing: '0.2em',
-      textTransform: 'uppercase' as const,
-      cursor: 'pointer',
+      fontSize: "0.8rem",
+      letterSpacing: "0.2em",
+      textTransform: "uppercase" as const,
+      cursor: "pointer",
       fontFamily: "'Cinzel', serif",
     },
-    btnDisabled: {
-      opacity: 0.2,
-      cursor: 'not-allowed',
-    },
+    btnDisabled: { opacity: 0.2, cursor: "not-allowed" },
     cardGrid: {
-      display: 'flex',
-      flexWrap: 'wrap' as const,
-      justifyContent: 'center',
+      display: "flex",
+      flexWrap: "wrap" as const,
+      justifyContent: "center",
       gap: 12,
       maxWidth: 900,
       paddingBottom: 32,
     },
-    dotRow: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: 8,
-      marginBottom: 24,
-    },
+    dotRow: { display: "flex", alignItems: "center", gap: 8, marginBottom: 24 },
     dot: (active: boolean) => ({
       width: 12,
       height: 12,
-      borderRadius: '50%',
-      border: `1px solid ${active ? GOLD : GOLD + '4d'}`,
-      backgroundColor: active ? GOLD : 'transparent',
-      transition: 'all 0.3s',
-      boxShadow: active ? `0 0 8px ${GOLD}` : 'none',
+      borderRadius: "50%",
+      border: `1px solid ${active ? GOLD : GOLD + "4d"}`,
+      backgroundColor: active ? GOLD : "transparent",
+      transition: "all 0.3s",
+      boxShadow: active ? `0 0 8px ${GOLD}` : "none",
     }),
     readingBox: {
       maxWidth: 640,
-      width: '100%',
+      width: "100%",
       backgroundColor: `${BG_CARD}99`,
       border: `1px solid ${GOLD}26`,
       borderRadius: 12,
-      padding: 'clamp(16px, 4vw, 32px)',
+      padding: "clamp(16px, 4vw, 32px)",
       boxShadow: `0 0 40px ${GOLD}0d, inset 0 0 30px rgba(0,0,0,0.3)`,
     },
     readingHeader: {
-      display: 'flex',
-      alignItems: 'center',
+      display: "flex",
+      alignItems: "center",
       gap: 12,
       marginBottom: 16,
     },
@@ -318,136 +324,130 @@ export default function App() {
       background: `linear-gradient(to right, transparent, ${GOLD}66)`,
     },
     readingLabel: {
-      fontSize: '0.6rem',
-      letterSpacing: '0.3em',
-      textTransform: 'uppercase' as const,
+      fontSize: "0.6rem",
+      letterSpacing: "0.3em",
+      textTransform: "uppercase" as const,
       color: `${GOLD}80`,
-      whiteSpace: 'nowrap' as const,
+      whiteSpace: "nowrap" as const,
     },
     readingText: {
       color: `${GOLD}cc`,
-      fontSize: 'clamp(0.8rem, 2.5vw, 1rem)',
+      fontSize: "clamp(0.8rem, 2.5vw, 1rem)",
       lineHeight: 1.7,
-      fontStyle: 'italic',
+      fontStyle: "italic" as const,
     },
     loadingOverlay: {
-      position: 'fixed' as const,
+      position: "fixed" as const,
       inset: 0,
       zIndex: 40,
-      display: 'flex',
-      flexDirection: 'column' as const,
-      alignItems: 'center',
-      justifyContent: 'center',
+      display: "flex",
+      flexDirection: "column" as const,
+      alignItems: "center",
+      justifyContent: "center",
       backgroundColor: `${BG}e6`,
     },
     spinner: {
       width: 64,
       height: 64,
-      borderRadius: '50%',
+      borderRadius: "50%",
       border: `2px solid ${GOLD}33`,
       borderTopColor: GOLD,
     },
     loadingText: {
       marginTop: 24,
-      fontSize: '0.85rem',
-      letterSpacing: '0.2em',
+      fontSize: "0.85rem",
+      letterSpacing: "0.2em",
       color: `${GOLD}80`,
     },
     cardRevealRow: {
-      display: 'flex',
-      flexWrap: 'wrap' as const,
-      justifyContent: 'center',
+      display: "flex",
+      flexWrap: "wrap" as const,
+      justifyContent: "center",
       gap: 16,
       marginBottom: 32,
     },
     revealCard: {
-      display: 'flex',
-      flexDirection: 'column' as const,
-      alignItems: 'center',
+      display: "flex",
+      flexDirection: "column" as const,
+      alignItems: "center",
     },
     revealImg: (big: boolean) => ({
-      width: big ? 'clamp(90px, 15vw, 130px)' : 'clamp(70px, 12vw, 100px)',
-      height: big ? 'clamp(155px, 25vw, 220px)' : 'clamp(120px, 20vw, 170px)',
+      width: big ? "clamp(90px, 15vw, 130px)" : "clamp(70px, 12vw, 100px)",
+      height: big
+        ? "clamp(155px, 25vw, 220px)"
+        : "clamp(120px, 20vw, 170px)",
       borderRadius: 8,
-      overflow: 'hidden' as const,
-      border: `2px solid ${big ? GOLD + 'b3' : GOLD + '4d'}`,
-      position: 'relative' as const,
+      overflow: "hidden" as const,
+      border: `2px solid ${big ? GOLD + "b3" : GOLD + "4d"}`,
+      position: "relative" as const,
       boxShadow: big
         ? `0 0 25px ${GOLD}33, 0 8px 32px rgba(0,0,0,0.4)`
         : `0 4px 16px rgba(0,0,0,0.3)`,
     }),
-    imgFill: {
-      width: '100%',
-      height: '100%',
-      objectFit: 'cover' as const,
-    },
+    imgFill: { width: "100%", height: "100%", objectFit: "cover" as const },
     cardOverlay: {
-      position: 'absolute' as const,
+      position: "absolute" as const,
       bottom: 0,
       left: 0,
       right: 0,
-      background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
-      padding: '16px 4px 4px',
+      background: "linear-gradient(to top, rgba(0,0,0,0.8), transparent)",
+      padding: "16px 4px 4px",
     },
     cardName: {
-      fontSize: 'clamp(7px, 1.5vw, 10px)',
-      fontWeight: 'bold' as const,
-      letterSpacing: '0.1em',
+      fontSize: "clamp(7px, 1.5vw, 10px)",
+      fontWeight: "bold" as const,
+      letterSpacing: "0.1em",
       color: GOLD,
-      textTransform: 'uppercase' as const,
-      textAlign: 'center' as const,
+      textTransform: "uppercase" as const,
+      textAlign: "center" as const,
     },
-    positionLabel: (dim: boolean) => ({
+    posLabel: (dim: boolean) => ({
       marginTop: 4,
-      fontSize: '0.5rem',
-      letterSpacing: '0.15em',
+      fontSize: "0.5rem",
+      letterSpacing: "0.15em",
       color: dim ? `${GOLD}4d` : `${GOLD}80`,
-      textTransform: 'uppercase' as const,
+      textTransform: "uppercase" as const,
     }),
     symbolRow: {
-      display: 'flex',
-      alignItems: 'center',
+      display: "flex",
+      alignItems: "center",
       gap: 16,
       marginTop: 64,
       color: `${GOLD}26`,
-      fontSize: '1.2rem',
+      fontSize: "1.2rem",
     },
-    symbolLine: {
-      width: 48,
-      height: 1,
-      backgroundColor: `${GOLD}1a`,
-    },
+    symbolLine: { width: 48, height: 1, backgroundColor: `${GOLD}1a` },
     btnRow: {
-      display: 'flex',
-      flexWrap: 'wrap' as const,
-      justifyContent: 'center',
+      display: "flex",
+      flexWrap: "wrap" as const,
+      justifyContent: "center",
       gap: 16,
       marginTop: 32,
     },
     btnSecondary: {
-      padding: '12px 32px',
-      backgroundColor: 'transparent',
+      padding: "12px 32px",
+      backgroundColor: "transparent",
       border: `1px solid ${GOLD}33`,
       borderRadius: 8,
       color: `${GOLD}80`,
-      fontSize: '0.75rem',
-      letterSpacing: '0.15em',
-      textTransform: 'uppercase' as const,
-      cursor: 'pointer',
+      fontSize: "0.75rem",
+      letterSpacing: "0.15em",
+      textTransform: "uppercase" as const,
+      cursor: "pointer",
       fontFamily: "'Cinzel', serif",
     },
     miniCard: {
-      width: 'clamp(50px, 10vw, 70px)',
-      height: 'clamp(85px, 16vw, 115px)',
+      width: "clamp(50px, 10vw, 70px)",
+      height: "clamp(85px, 16vw, 115px)",
       borderRadius: 4,
       border: `1px solid ${GOLD}4d`,
-      overflow: 'hidden' as const,
-      position: 'relative' as const,
+      overflow: "hidden" as const,
+      position: "relative" as const,
       opacity: 0.7,
     },
     collapsedReading: {
       maxWidth: 640,
-      width: '100%',
+      width: "100%",
       backgroundColor: `${BG_CARD}66`,
       border: `1px solid ${GOLD}1a`,
       borderRadius: 8,
@@ -455,29 +455,32 @@ export default function App() {
       marginBottom: 16,
     },
     collapsedLabel: {
-      fontSize: '0.6rem',
-      letterSpacing: '0.2em',
-      textTransform: 'uppercase' as const,
+      fontSize: "0.6rem",
+      letterSpacing: "0.2em",
+      textTransform: "uppercase" as const,
       color: `${GOLD}4d`,
       marginBottom: 8,
     },
     collapsedText: {
       color: `${GOLD}66`,
-      fontSize: '0.75rem',
+      fontSize: "0.75rem",
       lineHeight: 1.5,
-      fontStyle: 'italic',
-      display: '-webkit-box',
+      fontStyle: "italic" as const,
+      display: "-webkit-box",
       WebkitLineClamp: 3,
-      WebkitBoxOrient: 'vertical' as const,
-      overflow: 'hidden',
+      WebkitBoxOrient: "vertical" as const,
+      overflow: "hidden",
     },
   };
+
+  const POSITIONS = ["Passe", "Present", "Obstacle", "Avenir"];
 
   return (
     <div style={s.root}>
       <MysticParticles />
       <Candle side="left" />
       <Candle side="right" />
+      {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
       <audio ref={audioRef} src={musicUrl} loop preload="auto" />
 
       {/* Audio toggle */}
@@ -486,7 +489,7 @@ export default function App() {
         style={s.audioBtn}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
-        aria-label={isPlaying ? 'Couper le son' : 'Activer le son'}
+        aria-label={isPlaying ? "Couper le son" : "Activer le son"}
       >
         {isPlaying ? (
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={GOLD} strokeWidth="2">
@@ -503,18 +506,14 @@ export default function App() {
         )}
       </motion.button>
 
-      {/* ===== INTRO SPLASH ===== */}
+      {/* ===== INTRO ===== */}
       <AnimatePresence>
         {showIntro && (
-          <motion.div
-            style={s.fullOverlay}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1.5 }}
-          >
+          <motion.div style={s.fullOverlay} exit={{ opacity: 0 }} transition={{ duration: 1.5 }}>
             <motion.div
               initial={{ opacity: 0, scale: 0.3 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 1.5, ease: 'easeOut' }}
+              transition={{ duration: 1.5, ease: "easeOut" }}
             >
               <CrystalBall />
             </motion.div>
@@ -533,7 +532,7 @@ export default function App() {
               transition={{ delay: 1.5, duration: 1 }}
             />
             <motion.p
-              style={{ color: `${GOLD}66`, fontSize: '0.7rem', letterSpacing: '0.2em', fontStyle: 'italic' }}
+              style={{ color: `${GOLD}66`, fontSize: "0.7rem", letterSpacing: "0.2em", fontStyle: "italic" }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 2, duration: 1 }}
@@ -544,9 +543,9 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* ===== MAIN CONTENT ===== */}
+      {/* ===== MAIN ===== */}
       <AnimatePresence mode="wait">
-        {/* ===== PHASE 1: QUESTION ===== */}
+        {/* --- PHASE 1: QUESTION --- */}
         {gameState === GameState.INITIAL && !showIntro && (
           <motion.div
             key="initial"
@@ -557,7 +556,6 @@ export default function App() {
             transition={{ duration: 0.8 }}
           >
             <CrystalBall />
-
             <motion.h1
               style={s.title}
               initial={{ opacity: 0, y: 20 }}
@@ -566,14 +564,12 @@ export default function App() {
             >
               Le Rituel du Tarot
             </motion.h1>
-
             <motion.div
               style={s.divider}
               initial={{ scaleX: 0 }}
               animate={{ scaleX: 1 }}
               transition={{ delay: 0.6, duration: 0.8 }}
             />
-
             <motion.p
               style={s.phrase}
               initial={{ opacity: 0 }}
@@ -582,47 +578,37 @@ export default function App() {
             >
               {fortunePhrase}
             </motion.p>
-
             <motion.div
-              style={{ width: '100%', maxWidth: 480 }}
+              style={{ width: "100%", maxWidth: 480 }}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1 }}
             >
-              <label style={s.label}>
-                Quelle est votre question ?
-              </label>
-              <div style={{ position: 'relative' }}>
-                <input
-                  type="text"
-                  value={question}
-                  onChange={(e) => setQuestion(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleStartRitual()}
-                  placeholder="Posez votre question au destin..."
-                  style={s.input}
-                />
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <label style={s.label}>Quelle est votre question ?</label>
+              <input
+                type="text"
+                value={question}
+                onChange={(e) => setQuestion(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleStartRitual()}
+                placeholder="Posez votre question au destin..."
+                style={s.input}
+              />
+              <div style={{ display: "flex", justifyContent: "center" }}>
                 <motion.button
                   onClick={handleStartRitual}
                   disabled={!question.trim()}
-                  style={{
-                    ...s.btn,
-                    ...(question.trim() ? {} : s.btnDisabled),
-                  }}
-                  whileHover={question.trim() ? {
-                    scale: 1.05,
-                    borderColor: `${GOLD}cc`,
-                    boxShadow: `0 0 20px ${GOLD}26`,
-                  } : {}}
+                  style={{ ...s.btn, ...(question.trim() ? {} : s.btnDisabled) }}
+                  whileHover={
+                    question.trim()
+                      ? { scale: 1.05, borderColor: `${GOLD}cc`, boxShadow: `0 0 20px ${GOLD}26` }
+                      : {}
+                  }
                   whileTap={question.trim() ? { scale: 0.95 } : {}}
                 >
                   Commencer le Rituel
                 </motion.button>
               </div>
             </motion.div>
-
             <motion.div
               style={s.symbolRow}
               initial={{ opacity: 0 }}
@@ -630,33 +616,33 @@ export default function App() {
               transition={{ delay: 1.5 }}
             >
               <span>&#9789;</span>
-              <span style={s.symbolLine} />
+              <span style={s.symbolLine as React.CSSProperties} />
               <span>&#9788;</span>
-              <span style={s.symbolLine} />
+              <span style={s.symbolLine as React.CSSProperties} />
               <span>&#9790;</span>
             </motion.div>
           </motion.div>
         )}
 
-        {/* ===== SHUFFLING ANIMATION ===== */}
+        {/* --- SHUFFLING --- */}
         {isShuffling && (
           <motion.div
             key="shuffling"
-            style={{ ...s.loadingOverlay, zIndex: 40 }}
+            style={{ ...s.loadingOverlay, zIndex: 45 }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <div style={{ position: 'relative', width: 128, height: 192 }}>
+            <div style={{ position: "relative", width: 128, height: 192 }}>
               {[0, 1, 2, 3, 4].map((i) => (
                 <motion.div
                   key={i}
                   style={{
-                    position: 'absolute',
+                    position: "absolute",
                     inset: 0,
                     borderRadius: 8,
                     border: `1px solid ${GOLD}4d`,
-                    background: 'linear-gradient(145deg, #1a0a0a, #0d0505)',
+                    background: "linear-gradient(145deg, #1a0a0a, #0d0505)",
                   }}
                   animate={{
                     x: [0, (i - 2) * 40, 0, -(i - 2) * 30, 0],
@@ -664,11 +650,7 @@ export default function App() {
                     rotateZ: [0, (i - 2) * 8, 0, -(i - 2) * 5, 0],
                     rotateY: [0, 180, 360],
                   }}
-                  transition={{
-                    duration: 1.8,
-                    ease: 'easeInOut',
-                    delay: i * 0.05,
-                  }}
+                  transition={{ duration: 1.8, ease: "easeInOut", delay: i * 0.05 }}
                 />
               ))}
             </div>
@@ -682,7 +664,7 @@ export default function App() {
           </motion.div>
         )}
 
-        {/* ===== PHASE 2: CARD SELECTION ===== */}
+        {/* --- PHASE 2: CARD SELECTION --- */}
         {gameState === GameState.DEALT && (
           <motion.div
             key="dealt"
@@ -707,42 +689,32 @@ export default function App() {
             >
               Laissez votre intuition vous guider...
             </motion.p>
-
-            {/* Progress dots */}
             <div style={s.dotRow}>
               {[0, 1, 2, 3].map((i) => (
                 <motion.div
                   key={i}
                   style={s.dot(i < selectedCards.length)}
-                  animate={
-                    i < selectedCards.length
-                      ? { scale: [1, 1.4, 1] }
-                      : {}
-                  }
+                  animate={i < selectedCards.length ? { scale: [1, 1.4, 1] } : {}}
                   transition={{ duration: 0.5 }}
                 />
               ))}
             </div>
-
-            {/* Card spread */}
             <div style={s.cardGrid}>
               {visibleDeck.map((card, index) => {
-                const isSelected = !!selectedCards.find((c) => c.name === card.name);
+                const isSel = !!selectedCards.find((c) => c.name === card.name);
                 return (
                   <RitualCard
                     key={card.name}
                     card={card}
                     index={index}
                     isRevealed={revealedCards.has(index)}
-                    isSelectable={!isSelected && selectedCards.length < 4}
-                    isSelected={isSelected}
+                    isSelectable={!isSel && selectedCards.length < 4}
+                    isSelected={isSel}
                     onClick={() => handleSelectCard(card, index)}
                   />
                 );
               })}
             </div>
-
-            {/* Loading overlay */}
             <AnimatePresence>
               {isLoading && (
                 <motion.div
@@ -754,7 +726,7 @@ export default function App() {
                   <motion.div
                     style={s.spinner}
                     animate={{ rotate: 360 }}
-                    transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
                   />
                   <motion.p
                     style={s.loadingText}
@@ -769,7 +741,7 @@ export default function App() {
           </motion.div>
         )}
 
-        {/* ===== PHASE 3: READING ===== */}
+        {/* --- PHASE 3: READING --- */}
         {gameState === GameState.READING && (
           <motion.div
             key="reading"
@@ -778,15 +750,9 @@ export default function App() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <motion.h2
-              style={s.subtitle}
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
+            <motion.h2 style={s.subtitle} initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
               Votre Tirage
             </motion.h2>
-
-            {/* Selected cards display */}
             <div style={s.cardRevealRow}>
               {selectedCards.map((card, i) => (
                 <motion.div
@@ -794,7 +760,7 @@ export default function App() {
                   style={s.revealCard}
                   initial={{ opacity: 0, y: 30, rotateY: -90 }}
                   animate={{ opacity: 1, y: 0, rotateY: 0 }}
-                  transition={{ delay: i * 0.2, duration: 0.8, type: 'spring' }}
+                  transition={{ delay: i * 0.2, duration: 0.8, type: "spring" }}
                 >
                   <div style={s.revealImg(true)}>
                     <img src={card.imageUrl} alt={card.name} style={s.imgFill} crossOrigin="anonymous" />
@@ -803,18 +769,16 @@ export default function App() {
                     </div>
                   </div>
                   <motion.span
-                    style={s.positionLabel(false)}
+                    style={s.posLabel(false)}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: i * 0.2 + 0.5 }}
                   >
-                    {['Passe', 'Present', 'Obstacle', 'Avenir'][i]}
+                    {POSITIONS[i]}
                   </motion.span>
                 </motion.div>
               ))}
             </div>
-
-            {/* Reading text */}
             <motion.div
               style={s.readingBox}
               initial={{ opacity: 0, y: 20 }}
@@ -830,8 +794,6 @@ export default function App() {
                 <Typewriter text={reading} speed={0.025} />
               </div>
             </motion.div>
-
-            {/* Buttons */}
             <motion.div
               style={s.btnRow}
               initial={{ opacity: 0 }}
@@ -858,7 +820,7 @@ export default function App() {
           </motion.div>
         )}
 
-        {/* ===== PHASE 4: DEEPENING ===== */}
+        {/* --- PHASE 4: DEEPENING --- */}
         {gameState === GameState.DEEPENING && (
           <motion.div
             key="deepening"
@@ -867,11 +829,7 @@ export default function App() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <motion.h2
-              style={s.subtitle}
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
+            <motion.h2 style={s.subtitle} initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
               Approfondissement
             </motion.h2>
             <motion.p
@@ -880,13 +838,11 @@ export default function App() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
             >
-              Deux arcanes supplementaires eclairent votre chemin...
+              {"Deux arcanes supplementaires eclairent votre chemin..."}
               <br />
-              Retournez-les pour completer la vision.
+              {"Retournez-les pour completer la vision."}
             </motion.p>
-
-            {/* Original 4 cards (small) */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 12, marginBottom: 24 }}>
+            <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 12, marginBottom: 24 }}>
               {selectedCards.map((card, i) => (
                 <motion.div
                   key={card.name}
@@ -899,16 +855,13 @@ export default function App() {
                 </motion.div>
               ))}
             </div>
-
             <motion.div
               style={{ ...s.divider, width: 64, marginBottom: 24 }}
               initial={{ scaleX: 0 }}
               animate={{ scaleX: 1 }}
               transition={{ delay: 0.5 }}
             />
-
-            {/* Deep cards */}
-            <div style={{ display: 'flex', gap: 24, marginBottom: 32 }}>
+            <div style={{ display: "flex", gap: 24, marginBottom: 32 }}>
               {deepCards.map((card, index) => (
                 <RitualCard
                   key={card.name}
@@ -921,8 +874,6 @@ export default function App() {
                 />
               ))}
             </div>
-
-            {/* Loading */}
             <AnimatePresence>
               {isLoading && (
                 <motion.div
@@ -934,14 +885,14 @@ export default function App() {
                   <motion.div
                     style={s.spinner}
                     animate={{ rotate: 360 }}
-                    transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
                   />
                   <motion.p
                     style={s.loadingText}
                     animate={{ opacity: [0.3, 1, 0.3] }}
                     transition={{ duration: 2, repeat: Infinity }}
                   >
-                    Les arcanes revelent leurs secrets profonds...
+                    {"Les arcanes revelent leurs secrets profonds..."}
                   </motion.p>
                 </motion.div>
               )}
@@ -949,7 +900,7 @@ export default function App() {
           </motion.div>
         )}
 
-        {/* ===== PHASE 5: FINAL READING ===== */}
+        {/* --- PHASE 5: FINAL --- */}
         {gameState === GameState.FINAL_READING && (
           <motion.div
             key="final"
@@ -957,15 +908,9 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            <motion.h2
-              style={s.subtitle}
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
+            <motion.h2 style={s.subtitle} initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
               Lecture Approfondie
             </motion.h2>
-
-            {/* All 6 cards */}
             <div style={s.cardRevealRow}>
               {[...selectedCards, ...deepCards].map((card, i) => (
                 <motion.div
@@ -981,13 +926,11 @@ export default function App() {
                       <p style={s.cardName}>{card.name}</p>
                     </div>
                   </div>
-                  {i < 4 && <span style={s.positionLabel(true)}>{['Passe', 'Present', 'Obstacle', 'Avenir'][i]}</span>}
-                  {i >= 4 && <span style={s.positionLabel(false)}>{['Eclairage', 'Conseil'][i - 4]}</span>}
+                  {i < 4 && <span style={s.posLabel(true)}>{POSITIONS[i]}</span>}
+                  {i >= 4 && <span style={s.posLabel(false)}>{["Eclairage", "Conseil"][i - 4]}</span>}
                 </motion.div>
               ))}
             </div>
-
-            {/* Previous reading */}
             <motion.div
               style={s.collapsedReading}
               initial={{ opacity: 0 }}
@@ -997,8 +940,6 @@ export default function App() {
               <p style={s.collapsedLabel}>Premiere Lecture</p>
               <p style={s.collapsedText}>{reading}</p>
             </motion.div>
-
-            {/* Deep reading */}
             <motion.div
               style={s.readingBox}
               initial={{ opacity: 0, y: 20 }}
@@ -1014,9 +955,7 @@ export default function App() {
                 <Typewriter text={deepReading} speed={0.025} />
               </div>
             </motion.div>
-
-            {/* New reading button */}
-            <motion.div style={{ display: 'flex', justifyContent: 'center' }}>
+            <motion.div style={{ display: "flex", justifyContent: "center" }}>
               <motion.button
                 onClick={handleNewReading}
                 style={{ ...s.btn, marginTop: 32 }}
@@ -1029,17 +968,15 @@ export default function App() {
                 Nouveau Rituel
               </motion.button>
             </motion.div>
-
-            {/* Footer ornament */}
             <motion.div
               style={s.symbolRow}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 2.5 }}
             >
-              <span style={s.symbolLine} />
+              <span style={s.symbolLine as React.CSSProperties} />
               <span>&#9788;</span>
-              <span style={s.symbolLine} />
+              <span style={s.symbolLine as React.CSSProperties} />
             </motion.div>
           </motion.div>
         )}

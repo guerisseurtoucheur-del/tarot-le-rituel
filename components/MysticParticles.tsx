@@ -1,41 +1,43 @@
-import React, { useMemo } from 'react';
-import { motion } from 'framer-motion';
+"use client";
 
-interface Particle {
-  id: number;
-  x: number;
-  y: number;
-  size: number;
-  duration: number;
-  delay: number;
-  opacity: number;
-}
+import React, { useMemo } from "react";
+import { motion } from "framer-motion";
 
-const MysticParticles: React.FC = () => {
-  const particles = useMemo<Particle[]>(() => {
-    return Array.from({ length: 40 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * 3 + 1,
-      duration: Math.random() * 8 + 6,
-      delay: Math.random() * 5,
-      opacity: Math.random() * 0.5 + 0.1,
-    }));
-  }, []);
+export default function MysticParticles() {
+  const particles = useMemo(
+    () =>
+      Array.from({ length: 40 }, (_, i) => ({
+        id: i,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size: Math.random() * 3 + 1,
+        duration: Math.random() * 8 + 6,
+        delay: Math.random() * 5,
+        opacity: Math.random() * 0.5 + 0.1,
+      })),
+    []
+  );
 
   return (
-    <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 0 }}>
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        pointerEvents: "none",
+        overflow: "hidden",
+        zIndex: 0,
+      }}
+    >
       {particles.map((p) => (
         <motion.div
           key={p.id}
           style={{
-            position: 'absolute',
+            position: "absolute",
             left: `${p.x}%`,
             top: `${p.y}%`,
             width: p.size,
             height: p.size,
-            borderRadius: '50%',
+            borderRadius: "50%",
             background: `radial-gradient(circle, rgba(212,175,55,${p.opacity}) 0%, transparent 70%)`,
             boxShadow: `0 0 ${p.size * 3}px rgba(212,175,55,${p.opacity * 0.5})`,
           }}
@@ -49,12 +51,10 @@ const MysticParticles: React.FC = () => {
             duration: p.duration,
             repeat: Infinity,
             delay: p.delay,
-            ease: 'easeInOut',
+            ease: "easeInOut",
           }}
         />
       ))}
     </div>
   );
-};
-
-export default MysticParticles;
+}
